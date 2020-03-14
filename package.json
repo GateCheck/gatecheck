@@ -1,10 +1,23 @@
 {
-  "name": "gatecheck",
-  "version": "0.1.0",
-  "private": true,
+  "name": "gatecheck-backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dbschema.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GateCheck/gatecheck.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/GateCheck/gatecheck/issues"
+  },
+  "homepage": "https://github.com/GateCheck/gatecheck#readme",
   "dependencies": {
-    "react": "^16.13.0",
-    "react-dom": "^16.13.0",
-    "react-scripts": "3.4.0"
+    "moment": "^2.24.0"
   }
 }
