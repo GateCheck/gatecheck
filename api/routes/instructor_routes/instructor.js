@@ -3,7 +3,6 @@ const router = express.Router();
 const mongoose = require('mongoose');
 const {
     Student,
-    Parent,
     Instructor
 } = require('../../models/index');
 const validator = require('validator').default;
