@@ -1,14 +1,21 @@
 const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
-const { Student, Parent, Instructor } = require('../../models/index');
+const {
+    Student,
+    Parent,
+    Instructor
+} = require('../../models/index');
 const validator = require('validator').default;
 
 // get student from db
 router.get("/student/:id", (req, res) => {
     const id = req.params.id;
     if (id === undefined) {
-        return res.status(400).json({ success: false, error: 'Invalid Database ID' });
+        return res.status(400).json({
+            success: false,
+            error: 'Invalid Database ID'
+        });
     }
     Student.findById(id).exec().then(studentDoc => {
         const student = studentDoc.toJSON();
@@ -29,45 +36,60 @@ router.get("/student/:id", (req, res) => {
 // get student by real id or email or username
 router.get("/student", (req, res) => {
     const chosen = req.query.id || req.query.email || req.query.username;
-    if (req.query.realid !== undefined || req.query.email !== undefined) {
-        Student.findOne({
-            $or: [{
-                    contact: {
-                        email: chosen
-                    }
-                },
-                {
-                    id_number: Number.parseInt(chosen)
-                },
-                {
-                    username: chosen
-                }
-            ]
-        }).then(studentDoc => {
+    if (req.query.id !== undefined || req.query.email !== undefined || req.query.username !== undefined) {
+        
+        const cond = req.query.id !== undefined ? {
+            id_number: Number.parseInt(chosen)
+        } : req.query.email !== undefined ? {
+            "contact.email": chosen
+
+        } : {
+            username: chosen
+        };
+
+        Student.findOne(cond).then(studentDoc => {
             const student = studentDoc.toJSON();
             delete student.password;
-            res.status(200).json({success: true, student});
+            res.status(200).json({
+                success: true,
+                student
+            });
+        }).catch(err => {
+            console.error(err);
+            res.status(400).json({
+                success: false,
+                error: "Can't find user."
+            })
         });
     } else {
-        res.status(400).json({success: false, error: "Pass a username, email or id in the query."})
+        res.status(400).json({
+            success: false,
+            error: "Pass a username, email or id in the query."
+        })
     }
 });
 
 // create student
 router.post('/student', (req, res) => {
     if (req.body.email === undefined || !validator.isEmail(req.body.email)) {
-        return res.status(400).json({success: false, error: 'Invalid email!'});
+        return res.status(400).json({
+            success: false,
+            error: 'Invalid email!'
+        });
     } else if (req.body.password === undefined || req.body.password.length < 8) {
-        return res.status(400).json({success: false, error: "Please choose a longer password."})
+        return res.status(400).json({
+            success: false,
+            error: "Please choose a longer password."
+        })
     }
     const student = new Student({
         _id: new mongoose.Types.ObjectId(),
         contact: {
-            email: req.body.email,
+            email: req.body.email.toLowerCase(),
             phone: req.body.phone,
         },
         password: req.body.password,
-        username: req.body.username,
+        username: req.body.username.toLowerCase(),
         full_name: req.body.fullName,
         id_number: req.body.idNumber || -1,
         instructors: req.body.instructorIDs === undefined || req.body.instructorIDs === null ? null : req.body.instructorIDs.map(instructorID => Instructor.findById(instructorID)),
