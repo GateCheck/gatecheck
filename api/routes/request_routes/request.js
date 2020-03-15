@@ -18,7 +18,7 @@ router.get("/request/:requestId", checkAuth, async (req, res) => {
             });
         }
     
-        if (request.issuer === req.userData.userId) {
+        if (request.issuer._id == req.userData.userId) {
             res.status(200).json({
                 success: true,
                 message: "Found resource",
@@ -89,7 +89,7 @@ router.post("/request", checkAuth, async (req, res) => {
 
 });
 
-router.delete("/request", checkAuth, async (req, res) => {
+router.delete("/request/:requestId", checkAuth, async (req, res) => {
     const request = await Request.findById(req.params.requestId);
     if (request === null) {
         return res.status(404).json({
@@ -98,11 +98,13 @@ router.delete("/request", checkAuth, async (req, res) => {
         });
     }
 
-    if (request.issuer === req.userData.userId || Instructor.exists({ _id: req.userData.userId })) {
-        res.status(204).json({
-            success: true,
-            message: "Deleted resource",
-            request
+    if (request.issuer._id == req.userData.userId || Instructor.exists({ _id: req.userData.userId })) {
+        Request.deleteOne({ _id: request._id }).then(() => {
+            res.status(204).json({
+                success: true,
+                message: "Deleted resource",
+                request
+            });
         });
     } else {
         res.status(401).json({
