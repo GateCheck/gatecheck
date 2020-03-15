@@ -1,3 +1,7 @@
+const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
+const SALT_WORK_FACTOR = 10;
+
 const userSchema = mongoose.Schema({
     _id: mongoose.Schema.Types.ObjectId,
     contact: {
