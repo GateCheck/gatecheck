@@ -47,6 +47,8 @@ router.get("/student", (req, res) => {
             delete student.password;
             res.status(200).json({success: true, student});
         });
+    } else {
+        res.status(400).json({success: false, error: "Pass a username, email or id in the query."})
     }
 });
 
