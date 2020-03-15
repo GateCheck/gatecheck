@@ -46,12 +46,12 @@ router.get("/instructor", (req, res) => {
             username: chosen
         };
 
-        Student.findOne(cond).then(studentDoc => {
-            const student = studentDoc.toJSON();
-            delete student.password;
+        Instructor.findOne(cond).then(instructorDoc => {
+            const instructor = instructorDoc.toJSON();
+            delete instructor.password;
             res.status(200).json({
                 success: true,
-                student
+                instructor
             });
         }).catch(err => {
             console.error(err);
@@ -68,7 +68,7 @@ router.get("/instructor", (req, res) => {
     }
 });
 
-// create student
+// create instructor
 router.post('/instructor', (req, res) => {
     if (req.body.email === undefined || !validator.isEmail(req.body.email)) {
         return res.status(400).json({
