@@ -38,7 +38,7 @@ instructorSchema.pre('save', function(next) {
     });
 });
 
-instrutorSchema.methods.comparePassword = function(candidatePassword, cb) {
+instructorSchema.methods.comparePassword = function(candidatePassword, cb) {
     bcrypt.compare(candidatePassword, this.password, function(err, isMatch) {
         if (err) return cb(err);
         cb(null, isMatch);

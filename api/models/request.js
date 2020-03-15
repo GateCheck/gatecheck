@@ -4,9 +4,9 @@ const moment = require('moment');
 const requestSchema = mongoose.Schema({
     _id: mongoose.Schema.Types.ObjectId,
     accepted: Boolean,
-    acceptedDate: moment,
+    acceptedDate: Date,
     details: String,
-    issuedDate: moment,
+    issuedDate: Date,
     issuer: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Student'
@@ -14,9 +14,9 @@ const requestSchema = mongoose.Schema({
     reason: String,
     title: String,
     type: String,
-    validTill: moment,
+    validTill: Date,
     goLocation: String,
-    backAtSchoolTime: moment
+    backAtSchoolTime: Date
 });
 
 const requestModel = mongoose.model('Request', requestSchema, 'requests');
