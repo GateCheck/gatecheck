@@ -1,4 +1,5 @@
 const { studentRoute, studentsRoute } = require('./student_routes/index'); 
+const { requestRoute, requestsRoute } = require('./request_routes/index'); 
 const auth = require('./auth/auth');
 
 module.exports = {
@@ -13,7 +14,8 @@ module.exports = {
 
     },
     requestRoutes: {
-        
+        requestRoute,
+        requestsRoute
     },
     auth
 }

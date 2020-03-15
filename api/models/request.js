@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const moment = require('moment');
+const { Student } = require('../models/index');
 
 const requestSchema = mongoose.Schema({
     _id: mongoose.Schema.Types.ObjectId,
@@ -13,11 +14,20 @@ const requestSchema = mongoose.Schema({
     },
     reason: String,
     title: String,
-    type: String,
     validTill: Date,
     goLocation: String,
     backAtSchoolTime: Date
 });
+
+requestSchema.statics.findByRequestIssuerId = (id, callback) => {
+    const query = this.find();
+
+    Student.findOne({ _id: id }).then(student => {
+        query.where({ issuer: student._id }).exec(callback);
+    });
+    return query;
+
+}
 
 const requestModel = mongoose.model('Request', requestSchema, 'requests');
 

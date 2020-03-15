@@ -4,31 +4,41 @@ const mongoose = require('mongoose');
 const router = express.Router();
 const {
     Request,
-    Student
+    Student,
+    Instructor
 } = require('../../models/index');
 const checkAuth = require('../../middleware/check-auth');
 
 router.get("/request/:requestId", checkAuth, async (req, res) => {
-    const request = await Request.findById(req.params.requestId);
-    if (request === null) {
-        return res.status(404).json({
+    Request.findById(req.params.requestId).then(request => {
+        if (request === null) {
+            return res.status(404).json({
+                success: false,
+                message: "Invalid resource ID"
+            });
+        }
+    
+        if (request.issuer === req.userData.userId) {
+            res.status(200).json({
+                success: true,
+                message: "Found resource",
+                request
+            });
+        } else {
+            res.status(401).json({
+                success: false,
+                message: "Unauthorized"
+            });
+        }
+    }).catch(err => {
+        console.error(err);
+        res.status(500).json({
             success: false,
-            message: "Invalid resource ID"
-        });
-    }
-
-    if (request.issuer === req.userData.userId) {
-        res.status(200).json({
-            success: true,
-            message: "Found resource",
-            request
-        });
-    } else {
-        res.status(401).json({
-            success: false,
-            message: "Unauthorized"
-        });
-    }
+            message: err.message,
+            error: err
+        })
+    });
+    
 
 });
 
@@ -44,11 +54,10 @@ router.post("/request", checkAuth, async (req, res) => {
         details,
         reason,
         title,
-        type,
         goLocation
     } = req.body;
     const request = new Request({
-        _id: new mongoose.SchemaTypes.ObjectId(),
+        _id: new mongoose.Types.ObjectId(),
         accepted: false,
         accepted: null,
         details,
@@ -56,7 +65,6 @@ router.post("/request", checkAuth, async (req, res) => {
         issuer: user,
         reason,
         title,
-        type,
         validTill: moment().add(moment.duration({
             day: 1
         })).get(),
@@ -79,6 +87,29 @@ router.post("/request", checkAuth, async (req, res) => {
         });
     });
 
+});
+
+router.delete("/request", checkAuth, async (req, res) => {
+    const request = await Request.findById(req.params.requestId);
+    if (request === null) {
+        return res.status(404).json({
+            success: false,
+            message: "Invalid resource ID"
+        });
+    }
+
+    if (request.issuer === req.userData.userId || Instructor.exists({ _id: req.userData.userId })) {
+        res.status(204).json({
+            success: true,
+            message: "Deleted resource",
+            request
+        });
+    } else {
+        res.status(401).json({
+            success: false,
+            message: "Unauthorized"
+        });
+    }
 });
 
 

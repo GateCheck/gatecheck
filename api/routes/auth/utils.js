@@ -98,7 +98,7 @@ class LoginController {
     auth(user) {
         const token = jwt.sign({
             email: user.contact.email,
-            fullName: user.fill_name,
+            fullName: user.full_name,
             school: user.school,
             profilePicture: user.profile_picture,
             userId: user._id

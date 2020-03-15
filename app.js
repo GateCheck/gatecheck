@@ -5,7 +5,7 @@ const cookieParser = require('cookie-parser');
 const express = require('express');
 const cors = require('cors');
 
-const { studentRoutes, auth } = require('./api/routes/index');
+const { studentRoutes, auth, requestRoutes } = require('./api/routes/index');
 const app = express();
 
 
@@ -20,6 +20,8 @@ app.use(cors());
 
 app.use('/api', studentRoutes.studentRoute);
 app.use('/api', studentRoutes.studentsRoute);
+app.use('/api', requestRoutes.requestRoute);
+app.use('/api', requestRoutes.requestsRoute);
 app.use('/api/auth', auth);
 
 
