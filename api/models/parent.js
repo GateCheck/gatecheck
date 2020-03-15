@@ -1,6 +1,6 @@
-const mongoose = require('mongoose'),
-    extendSchema = require('mongoose-schema-extend');
-const userSchema = require('./user');
+const mongoose = require('mongoose');
+const { extendSchema } = require('../../utils');
+const { userSchema } = require('./user');
 
 const parentSchema = extendSchema(userSchema, {
     partners: [{

@@ -1,6 +1,6 @@
-const mongoose = require('mongoose'),
-    extendSchema = require('mongoose-schema-extend');
-const userSchema = require('./user');
+const mongoose = require('mongoose');
+const { userSchema } = require('./user');
+const { extendSchema } = require('../../utils');
 
 const instructorSchema = extendSchema(userSchema, {
     students: [{
@@ -8,7 +8,7 @@ const instructorSchema = extendSchema(userSchema, {
         ref: 'Student'
     }],
     school: String
-})
+});
 
 const instructorModel = mongoose.model('Instructor', instructorSchema, 'instructors');
 
