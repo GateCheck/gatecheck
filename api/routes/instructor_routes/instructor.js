@@ -68,48 +68,4 @@ router.get("/instructor", (req, res) => {
     }
 });
 
-// create instructor
-router.post('/instructor', (req, res) => {
-    if (req.body.email === undefined || !validator.isEmail(req.body.email)) {
-        return res.status(400).json({
-            success: false,
-            error: 'Invalid email!'
-        });
-    } else if (req.body.password === undefined || req.body.password.length < 8) {
-        return res.status(400).json({
-            success: false,
-            error: "Please choose a longer password."
-        })
-    }
-    const instructor = new Instructor({
-        _id: new mongoose.Types.ObjectId(),
-        contact: {
-            email: req.body.email.toLowerCase(),
-            phone: req.body.phone,
-        },
-        username: req.body.username.toLowerCase(),
-        password: req.body.password,
-        full_name: req.body.fullName,
-        id_number: req.body.idNumber || -1,
-        students: req.body.studentIDs === undefined || req.body.studentIDs === null ? null : req.body.studentIDs.map(studentID => Student.findById(studentID)),
-        profile_picture: req.body.profilePicture,
-        school: req.body.school
-    });
-
-    instructor.save().then(instructorDoc => {
-        const instructor = instructorDoc.toJSON();
-        delete instructor.password;
-        res.status(200).json({
-            sucess: true,
-            instructorCreated: instructor
-        });
-    }).catch(err => {
-        console.error(err);
-        res.status(500).json({
-            success: false,
-            error: err
-        });
-    });
-});
-
 module.exports = router;

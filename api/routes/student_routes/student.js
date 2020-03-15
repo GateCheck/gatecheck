@@ -96,7 +96,7 @@ router.post('/student', (req, res) => {
         parents: req.body.parentIDs === undefined || req.body.parentIDs === null ? null : req.body.parentIDs.map(parentID => Parent.findById(parentID)),
         profile_picture: req.body.profilePicture,
         school: req.body.school
-    })
+    });
 
     student.save().then(studentDoc => {
         const student = studentDoc.toJSON();
