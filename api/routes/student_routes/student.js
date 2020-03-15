@@ -69,49 +69,5 @@ router.get("/student", (req, res) => {
     }
 });
 
-// create student
-router.post('/student', (req, res) => {
-    if (req.body.email === undefined || !validator.isEmail(req.body.email)) {
-        return res.status(400).json({
-            success: false,
-            error: 'Invalid email!'
-        });
-    } else if (req.body.password === undefined || req.body.password.length < 8) {
-        return res.status(400).json({
-            success: false,
-            error: "Please choose a longer password."
-        })
-    }
-    const student = new Student({
-        _id: new mongoose.Types.ObjectId(),
-        contact: {
-            email: req.body.email.toLowerCase(),
-            phone: req.body.phone,
-        },
-        password: req.body.password,
-        username: req.body.username.toLowerCase(),
-        full_name: req.body.fullName,
-        id_number: req.body.idNumber || -1,
-        instructors: req.body.instructorIDs === undefined || req.body.instructorIDs === null ? null : req.body.instructorIDs.map(instructorID => Instructor.findById(instructorID)),
-        parents: req.body.parentIDs === undefined || req.body.parentIDs === null ? null : req.body.parentIDs.map(parentID => Parent.findById(parentID)),
-        profile_picture: req.body.profilePicture,
-        school: req.body.school
-    });
-
-    student.save().then(studentDoc => {
-        const student = studentDoc.toJSON();
-        delete student.password;
-        res.status(200).json({
-            sucess: true,
-            studentCreated: student
-        });
-    }).catch(err => {
-        console.error(err);
-        res.status(500).json({
-            success: false,
-            error: err
-        });
-    });
-});
 
 module.exports = router;
