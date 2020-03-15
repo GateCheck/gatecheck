@@ -1,9 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
-const Student = require('../../models/student');
-const Instructor = require('../../models/instructor');
-const Parent = require('../../models/parent');
+const { Student, Parent, Instructor } = require('../../models/index');
 
 router.get("/student", (req, res) => {
     const chosen = req.cookies.id || req.cookies.realid || req.cookies.email;
