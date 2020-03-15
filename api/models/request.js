@@ -19,6 +19,6 @@ const requestSchema = mongoose.Schema({
     backAtSchoolTime: moment
 });
 
-const requestModel = mongoose.model('Request', requestSchema);
+const requestModel = mongoose.model('Request', requestSchema, 'requests');
 
 module.exports = requestModel;

@@ -39,7 +39,7 @@ router.post('/student', (req, res) => {
             phone: req.body.phone,
         },
         full_name: req.body.fullName,
-        id_number: req.body.idNumber,
+        id_number: req.body.idNumber || -1,
         instructors: req.body.instructorIDs === undefined || req.body.instructorIDs === null ? null : req.body.instructorIDs.map(instructorID => Instructor.findById(instructorID)),
         parents: req.body.parentIDs === undefined || req.body.parentIDs === null ? null : req.body.parentIDs.map(parentID => Parent.findById(parentID)),
         profile_picture: req.body.profilePicture,
