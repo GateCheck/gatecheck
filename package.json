@@ -25,7 +25,8 @@
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "moment": "^2.24.0",
-    "mongoose": "^5.9.4"
+    "mongoose": "^5.9.4",
+    "validator": "^12.2.0"
   },
   "devDependencies": {
     "@types/cookie-parser": "^1.4.2",

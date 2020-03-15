@@ -11,7 +11,7 @@ const studentSchema = mongoose.Schema({
     username: { type: String, index: { unique: true } },
     password: { type: String, required: true },
     full_name: String,
-    id_number: Number,
+    id_number: { type: Number, index: { unique: true } },
     instructors: [{type: mongoose.Schema.Types.ObjectId, ref: 'Instructor'}],
     parents: [{type: mongoose.Schema.Types.ObjectId, ref: 'Parent'}],
     profile_picture: String,

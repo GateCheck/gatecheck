@@ -11,7 +11,7 @@ const instructorSchema = mongoose.Schema({
     username: { type: String, index: { unique: true } },
     password: { type: String, required: true },
     full_name: String,
-    id_number: Number,
+    id_number: { type: Number, index: { unique: true } },
     profile_picture: String,
     school: String,
     students: [{type: mongoose.Schema.Types.ObjectId, ref: 'Student'}],
