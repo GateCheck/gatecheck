@@ -5,7 +5,9 @@ const { Student } = require('../../models/index');
 router.get("/students", async (req, res) => {
     const students = [];
     for (const studentDoc of await Student.find()) {
-        students.push(studentDoc.toJSON());
+        const student = studentDoc.toJSON();
+        delete student.password;
+        students.push(student);
     }
     res.json(students);
 });
