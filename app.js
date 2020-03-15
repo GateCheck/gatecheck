@@ -5,7 +5,7 @@ const cookieParser = require('cookie-parser');
 const express = require('express');
 const cors = require('cors');
 
-const { studentRoute, studentsRoute } = require('./api/routes/students/index');
+const { studentRoute, studentsRoute } = require('./api/routes/student_routes/index');
 const app = express();
 
 
