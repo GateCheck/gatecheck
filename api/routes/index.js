@@ -1,5 +1,5 @@
 const { studentRoute, studentsRoute } = require('./student_routes/index'); 
-const auth = require('./auth');
+const auth = require('./auth/auth');
 
 module.exports = {
     studentRoutes: {

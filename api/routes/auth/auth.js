@@ -7,14 +7,14 @@ const {
     Student,
     Parent,
     Instructor
-} = require('../models/index');
+} = require('../../models/index');
 const {
     userExists,
-    getUserById,
-    getUserByEmail,
-    getUserByRealId,
-    getUserByUsername
-} = require('../utils');
+} = require('../../utils');
+const {
+    buildModelSignup,
+    LoginController
+} = require('./utils')
 
 const login = (user, password) => {
     if (user === null) {
@@ -42,6 +42,7 @@ const createUser = async (type, data) => {
         parentIDs,
         partnerIDs,
         studentIDs,
+        childrenIDs,
         profilePicture,
         school
     } = data;
@@ -70,60 +71,34 @@ const createUser = async (type, data) => {
         profile_picture: profilePicture
     }
 
-
-    if (_type === 'student') {
-        payload.instructors = instructorIDs === undefined || instructorIDs === null ? null : instructorIDs.map(instructorID => Instructor.findById(instructorID));
-        payload.parents = parentIDs === undefined || parentIDs === null ? null : parentIDs.map(parentID => Parent.findById(parentID));
-        payload.school = school;
-        return new Student(payload);
-    } else if (_type === 'parent') {
-        payload.children = studentIDs === undefined || studentIDs === null ? null : studentIDs.map(childID => Student.findById(childID));
-        payload.partners = partnerIDs === undefined || partnerIDs === null ? null : partnerIDs.map(partnerID => Parent.findById(partnerID));
-        return new Parent(payload);
-    } else if (_type === 'instructor') {
-        payload.students = studentIDs === undefined || studentIDs === null ? null : studentIDs.map(studentID => Student.findById(studentID));
-        payload.school = school;
-        return new Instructor(payload);
-    }
-
-    throw new Error('Invalid user type: ' + type);
+    return buildModelSignup(payload, _type, instructorIDs, parentIDs, studentIDs, partnerIDs, childrenIDs, school);
 
 }
 
 router.post('/signup/:signupAs', async (req, res) => {
     const signupAs = req.params.signupAs.toLowerCase();
-    try {
-        const user = await createUser(signupAs, req.body);
-        if (typeof user === typeof '') {
-            return res.status(400).json({
-                success: false,
-                message: user
-            })
-        }
-        user.save().then(userDoc => {
+
+    createUser(signupAs, req.body).then(user => {
+        typeof user === typeof '' ? res.status(400).json({ // show the reason the user was not created
+            success: false,
+            message: user
+        }) : user.save().then(userDoc => { // user was created successfully! show user data
             const data = userDoc.toJSON();
             delete data.password;
             res.status(201).json({
                 success: true,
                 [userDoc.collection.name.slice(0, userDoc.collection.name.length - 1) + 'Created']: data
             });
-        }).catch(err => {
-            console.error(err);
-            res.status(400).json({
-                success: false,
-                error: err
-            })
         });
-    } catch (err) {
+    }).catch(err => {
         console.error(err);
         res.status(400).json({
             success: false,
             error: err.message
         })
-    }
+    });
 });
 
-// TODO: make code not bad
 router.post('/login', (req, res) => {
     const {
         username,
@@ -131,88 +106,10 @@ router.post('/login', (req, res) => {
         password,
         id
     } = req.body;
-    if (password === undefined) {
-        return res.status(401).json({
-            message: "Auth failed"
-        });
-    }
-    if (id !== undefined) {
-        getUserByRealId(id).then(async user => {
-            const login_ = await login(user, password);
-            if (login_) {
-                return res.status(200).json({
-                    success: true,
-                    message: "Auth successful"
-                });
-            }
-            return res.status(401).json({
-                success: false,
-                message: "Auth failed"
-            });
-        }).catch(err => {
-            console.error(err);
-            res.status(500).json({
-                success: false,
-                error: err
-            });
-        });
-    } else if (email !== undefined) {
-        getUserByEmail(email).then(async user => {
-            const login_ = await login(user, password);
-            if (login_) {
-                const token = jwt.sign({
-                    email: user.contact.email,
-                    fullName: user.fill_name,
-                    idNumber: user.id_number,
-                    username: user.username,
-                    school: user.school,
-                    profilePicture: user.profile_picture,
-                    userId: user._id
-                }, process.env.JWT_KEY, {
-                    expiresIn: '1h'
-                });
-                return res.status(200).json({
-                    success: true,
-                    message: "Auth successful",
-                    token
-                });
-            }
-            return res.status(401).json({
-                success: false,
-                message: "Auth failed"
-            });
-        }).catch(err => {
-            console.error(err);
-            res.status(500).json({
-                success: false,
-                error: err
-            });
-        });
-    } else if (username !== undefined) {
-        getUserByUsername(username).then(async user => {
-            const login_ = await login(user, password);
-            if (login_) {
-                return res.status(200).json({
-                    success: true,
-                    message: "Auth successful"
-                });
-            }
-            return res.status(401).json({
-                success: false,
-                message: "Auth failed"
-            });
-        }).catch(err => {
-            console.error(err);
-            res.status(500).json({
-                success: false,
-                error: err
-            });
-        });
-    } else {
-        return res.status(401).json({
-            message: "Auth failed"
-        });
-    }
+    
+    const loginController = new LoginController({ username, email, id }, password, res);
+    loginController.login();
+    
 });
 
 router.delete('/delete/:userId', async (req, res) => {
