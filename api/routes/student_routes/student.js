@@ -33,41 +33,5 @@ router.get("/student/:id", (req, res) => {
     });
 });
 
-// get student by real id or email or username
-router.get("/student", (req, res) => {
-    const chosen = req.query.id || req.query.email || req.query.username;
-    if (req.query.id !== undefined || req.query.email !== undefined || req.query.username !== undefined) {
-        
-        const cond = req.query.id !== undefined ? {
-            id_number: Number.parseInt(chosen)
-        } : req.query.email !== undefined ? {
-            "contact.email": chosen
-
-        } : {
-            username: chosen
-        };
-
-        Student.findOne(cond).then(studentDoc => {
-            const student = studentDoc.toJSON();
-            delete student.password;
-            res.status(200).json({
-                success: true,
-                student
-            });
-        }).catch(err => {
-            console.error(err);
-            res.status(400).json({
-                success: false,
-                error: "Can't find user."
-            })
-        });
-    } else {
-        res.status(400).json({
-            success: false,
-            error: "Pass a username, email or id in the query."
-        })
-    }
-});
-
 
 module.exports = router;

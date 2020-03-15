@@ -2,12 +2,33 @@ const express = require('express');
 const mongoose = require('mongoose');
 const validator = require('validator').default;
 const router = express.Router();
+const jwt = require('jsonwebtoken');
 const {
     Student,
     Parent,
     Instructor
 } = require('../models/index');
-const { userExists } = require('../utils');
+const {
+    userExists,
+    getUserById,
+    getUserByEmail,
+    getUserByRealId,
+    getUserByUsername
+} = require('../utils');
+
+const login = (user, password) => {
+    if (user === null) {
+        return Promise.resolve(false);
+    }
+    return new Promise((resolve, reject) => {
+        user.comparePassword(password, (err, success) => {
+            if (err) {
+                return resolve(false);
+            }
+            resolve(success);
+        });
+    })
+}
 
 const createUser = async (type, data) => {
     const {
@@ -26,8 +47,7 @@ const createUser = async (type, data) => {
     } = data;
     if (password.length < 8) {
         return 'Choose a longer password!';
-    }
-    else if (!validator.isEmail(email)) {
+    } else if (!validator.isEmail(email)) {
         return 'Not a valid email!';
     }
 
@@ -75,7 +95,10 @@ router.post('/signup/:signupAs', async (req, res) => {
     try {
         const user = await createUser(signupAs, req.body);
         if (typeof user === typeof '') {
-            return res.status(400).json({success: false, message: user})
+            return res.status(400).json({
+                success: false,
+                message: user
+            })
         }
         user.save().then(userDoc => {
             const data = userDoc.toJSON();
@@ -97,6 +120,98 @@ router.post('/signup/:signupAs', async (req, res) => {
             success: false,
             error: err.message
         })
+    }
+});
+
+// TODO: make code not bad
+router.post('/login', (req, res) => {
+    const {
+        username,
+        email,
+        password,
+        id
+    } = req.body;
+    if (password === undefined) {
+        return res.status(401).json({
+            message: "Auth failed"
+        });
+    }
+    if (id !== undefined) {
+        getUserByRealId(id).then(async user => {
+            const login_ = await login(user, password);
+            if (login_) {
+                return res.status(200).json({
+                    success: true,
+                    message: "Auth successful"
+                });
+            }
+            return res.status(401).json({
+                success: false,
+                message: "Auth failed"
+            });
+        }).catch(err => {
+            console.error(err);
+            res.status(500).json({
+                success: false,
+                error: err
+            });
+        });
+    } else if (email !== undefined) {
+        getUserByEmail(email).then(async user => {
+            const login_ = await login(user, password);
+            if (login_) {
+                const token = jwt.sign({
+                    email: user.contact.email,
+                    fullName: user.fill_name,
+                    idNumber: user.id_number,
+                    username: user.username,
+                    school: user.school,
+                    profilePicture: user.profile_picture,
+                    userId: user._id
+                }, process.env.JWT_KEY, {
+                    expiresIn: '1h'
+                });
+                return res.status(200).json({
+                    success: true,
+                    message: "Auth successful",
+                    token
+                });
+            }
+            return res.status(401).json({
+                success: false,
+                message: "Auth failed"
+            });
+        }).catch(err => {
+            console.error(err);
+            res.status(500).json({
+                success: false,
+                error: err
+            });
+        });
+    } else if (username !== undefined) {
+        getUserByUsername(username).then(async user => {
+            const login_ = await login(user, password);
+            if (login_) {
+                return res.status(200).json({
+                    success: true,
+                    message: "Auth successful"
+                });
+            }
+            return res.status(401).json({
+                success: false,
+                message: "Auth failed"
+            });
+        }).catch(err => {
+            console.error(err);
+            res.status(500).json({
+                success: false,
+                error: err
+            });
+        });
+    } else {
+        return res.status(401).json({
+            message: "Auth failed"
+        });
     }
 });
 
