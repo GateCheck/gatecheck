@@ -26,8 +26,8 @@ router.get("/student/:id", (req, res) => {
 });
 
 // get student by real id or email or username
-router.post("/student", (req, res) => {
-    const chosen = req.body.id || req.body.email || req.body.username;
+router.get("/student", (req, res) => {
+    const chosen = req.query.id || req.query.email || req.query.username;
     if (req.query.realid !== undefined || req.query.email !== undefined) {
         Student.findOne({
             $or: [{
