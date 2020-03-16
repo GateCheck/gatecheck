@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const moment = require('moment');
 const { Student } = require('../models/index');
 
 const requestSchema = mongoose.Schema({
@@ -19,15 +18,6 @@ const requestSchema = mongoose.Schema({
     backAtSchoolTime: Date
 });
 
-requestSchema.statics.findByRequestIssuerId = (id, callback) => {
-    const query = this.find();
-
-    Student.findOne({ _id: id }).then(student => {
-        query.where({ issuer: student._id }).exec(callback);
-    });
-    return query;
-
-}
 
 const requestModel = mongoose.model('Request', requestSchema, 'requests');
 

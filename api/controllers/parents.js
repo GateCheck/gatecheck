@@ -12,7 +12,7 @@ exports.get_parent = async (req, res) => {
     const isInstructorRequesting = await parent.hasChildWithInstructorOfId(req.userData.userId);
     const allowAccess = req.user.administrative_level > 2 || // admin requesting
         req.userData.userId == req.params.parentId || // same user requesting
-        await parent.hasChildWithId(req.userData.userId) || // child of parent requesting
+        await parent.hasChildWithIdOf(req.userData.userId) || // child of parent requesting
         isInstructorRequesting // instructor of a child of the parent requesting
     if (!allowAccess)
         return res.status(401).json({

@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const { UserSchema: userSchema } = require('./user');
 const { extendSchema } = require('../../utils');
-const { Student, Parent} = require('./index');
+const { Parent } = require('./index');
 const bcrypt = require('bcryptjs');
 const SALT_WORK_FACTOR = 10;
 
@@ -13,6 +13,7 @@ const InstructorSchema = extendSchema(userSchema, {
     school: String
 });
 
+// Password hashing (encrypting)
 InstructorSchema.pre('save', function (next) {
     var user = this;
 
@@ -34,6 +35,11 @@ InstructorSchema.pre('save', function (next) {
     });
 });
 
+/**
+ * Compare the password of a user to the password passed
+ * @param {String} candidatePassword the password compared to the hash
+ * @param {Function} cb the function called when finishing comparasion. first argument is if an error occurred second is if password is correct or not
+ */
 InstructorSchema.methods.comparePassword = function (candidatePassword, cb) {
     bcrypt.compare(candidatePassword, this.password, function (err, isMatch) {
         if (err) return cb(err);
@@ -41,13 +47,12 @@ InstructorSchema.methods.comparePassword = function (candidatePassword, cb) {
     });
 };
 
-InstructorSchema.statics.isInstructor = function (id) {
-    return new Promise((resolve, reject) => {
-        resolve(this.exists({ _id: id }));
-    });
-}
-
-InstructorSchema.methods.isInstructorOfId = function (id) {
+/**
+ * Check whether or not the instructor is an instructor of the student's id passed.
+ * @param {String | mongoose.Types.ObjectId} id the id to compare against
+ * @returns {Promise<Boolean>} true if the instructor is an instructor of the student of the given id
+ */
+InstructorSchema.methods.isInstructorOfStudentWithIdOf = function (id) {
     return new Promise((resolve, reject) => {
         if (this.students === null || this.students.length < 1) return resolve(false);
         for (const student of this.students) {
@@ -57,6 +62,11 @@ InstructorSchema.methods.isInstructorOfId = function (id) {
     });
 }
 
+/**
+ * Checks whether or not the instructor given in the `this` context is an instructor that has a student with a parent of the id given
+ * @param {String | mongoose.Types.ObjectId} id the id to compare against
+ * @returns {Promise<Boolean>} true if the instructor does have a student that has a parent with the id given
+ */
 InstructorSchema.methods.isInstructorOfChildWithParentIdOf = function (id) {
     return new Promise((resolve, reject) => {
         Parent.findById(id).then(parent => {
@@ -72,6 +82,10 @@ InstructorSchema.methods.isInstructorOfChildWithParentIdOf = function (id) {
     });
 }
 
+/**
+ * Gets all the instructors that work in the same school as the instructor given in the `this` context
+ * @returns {Promise<Array<Document>>} the co workers or also explained as the instructors who share a school with the instructor given in the `this` context
+ */
 InstructorSchema.methods.getIntructorCoWorkers = function () {
     return new Promise((resolve, reject) => {
         const coworkers = [];

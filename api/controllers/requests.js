@@ -15,7 +15,7 @@ exports.get_request = async (req, res) => {
 
         // find if access should be allowed to the user. if the user is an instructor check if he is an instructor of the student who made the request if not set to false 
         // otherwise if user is the maker of the request set true
-        let accessAllowed = req.user.administrative_level > 2 || (req.modelName === 'Instructor' ? await req.user.isInstructorOfId(request.issuer._id) : request.issuer._id == req.userData.userId);
+        let accessAllowed = req.user.administrative_level > 2 || (req.modelName === 'Instructor' ? await req.user.isInstructorOfStudentWithIdOf(request.issuer._id) : request.issuer._id == req.userData.userId);
 
         if (accessAllowed) {
             res.status(200).json({

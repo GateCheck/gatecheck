@@ -16,6 +16,7 @@ const StudentSchema = extendSchema(userSchema, {
     school: String
 });
 
+// Password hashing (encrypting)
 StudentSchema.pre('save', function(next) {
     var user = this;
 
@@ -37,6 +38,11 @@ StudentSchema.pre('save', function(next) {
     });
 });
 
+/**
+ * Compare the password of a user to the password passed
+ * @param {String} candidatePassword the password compared to the hash
+ * @param {Function} cb the function called when finishing comparasion. first argument is if an error occurred second is if password is correct or not
+ */
 StudentSchema.methods.comparePassword = function(candidatePassword, cb) {
     bcrypt.compare(candidatePassword, this.password, function(err, isMatch) {
         if (err) return cb(err);
@@ -44,6 +50,11 @@ StudentSchema.methods.comparePassword = function(candidatePassword, cb) {
     });
 };
 
+/**
+ * Checks whether or not the student in the `this` context has a parent with the id given
+ * @param {String} id the id to compare against
+ * @returns {Promise<Boolean>} true if the student given in the `this` context has a parent with the id given.
+ */
 StudentSchema.methods.hasParentWithIdOf = function(id) {
     return new Promise((resolve, reject) => {
         if (this.parents === null || this.parents.length < 1) return resolve(false);
@@ -54,6 +65,11 @@ StudentSchema.methods.hasParentWithIdOf = function(id) {
     })
 }
 
+/**
+ * Checks whether or not the student in the `this` context has an instructor with the id given
+ * @param {String} id the id to compare against
+ * @returns {Promise<Boolean>} true if the student given in the `this` context has an instructor with the id given.
+ */
 StudentSchema.methods.hasInstructorWithIdOf = function(id) {
     return new Promise((resolve, reject) => {
         if (this.instructors === null || this.instructors.length < 1) return resolve(false);

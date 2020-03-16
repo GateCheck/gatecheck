@@ -11,7 +11,7 @@ exports.get_instructor = async (req, res) => {
         });
     let allowAccess = req.user.administrative_level > 2 || // admin requesting
         req.userData.userId == req.params.instructorId || // same user requesting
-        instructor.isInstructorOfId(req.user._id) || // student of instructor requesting
+        instructor.isInstructorOfStudentWithIdOf(req.user._id) || // student of instructor requesting
         instructor.isInstructorOfChildWithParentIdOf(req.user._id); // parent requesting
     if (!allowAccess)
         return res.status(401).json({

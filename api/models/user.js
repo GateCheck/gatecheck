@@ -1,10 +1,9 @@
 const mongoose = require('mongoose');
-const {
-    Student,
-    Parent,
-    Instructor
-} = require('./index')
 
+/**
+ * Base schema, later on extened upon to reduce amount of code and increase simplicity.
+ * administrative_level is the user access level. what a user can access and view.
+ */
 const UserSchema = mongoose.Schema({
     _id: mongoose.Schema.Types.ObjectId,
     contact: {
@@ -20,9 +19,6 @@ const UserSchema = mongoose.Schema({
 });
 
 
-const User = mongoose.model('User', UserSchema);
-
 module.exports = {
-    User,
     UserSchema: UserSchema
 };
