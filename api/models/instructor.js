@@ -90,14 +90,13 @@ InstructorSchema.methods.isInstructorOfChildWithParentIdOf = function(id) {
  * Gets all the instructors that work in the same school as the instructor given in the `this` context
  * @returns {Promise<Array<Document>>} the co workers or also explained as the instructors who share a school with the instructor given in the `this` context
  */
-InstructorSchema.methods.getIntructorCoWorkers = function() {
+InstructorSchema.statics.findCoworkersByInstructor = function(instructor) {
 	return new Promise((resolve, reject) => {
 		const coworkers = [];
-		this.model()
-			.find({ school: this.school })
+		this.find({ school: this.school })
 			.then((coworkerDocs) => {
 				coworkerDocs.forEach((coworkerDoc) => {
-					if (coworkerDoc._id !== this._id) coworkers.push(coworkerDoc);
+					if (coworkerDoc._id !== instructor._id) coworkers.push(coworkerDoc);
 				});
 			})
 			.catch((err) => reject(err));

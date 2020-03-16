@@ -36,7 +36,7 @@ const getUserTypeFromId = async (id) => {
  * @param {String | mongoose.Types.ObjectId} id the id of the user to get
  * @returns {Array<Document, String> | null} returns an array of the user document and type; [document, type]. if user not found returns null
  */
-const getUserAndTypeFromId = async (id) => {
+const getUserAndTypeFromId = async (userId) => {
 	const student = await Student.findById(userId);
 	if (student !== null) return [ student, 'Student' ];
 	const instructor = await Instructor.findById(userId);

@@ -27,14 +27,14 @@ exports.get_instructor = async (req, res) => {
 
 
 exports.get_all_instructors = async (req, res) => {
-    const instructors = [];
+    let instructors = [];
     if (req.user.administrative_level > 2) {
         Instructor.find().then(instructorDocs => {
             if (instructorDocs !== null && instructorDocs.length !== 0)
                 instructorDocs.forEach(instructorDoc => instructors.push(instructorDoc));
         });
     } else if (req.user.modelName === 'Instructor') {
-        instructors = await req.user.getIntructorCoWorkers();
+        instructors = await Instructor.findCoworkersByInstructor(req.user);
         instructors.push(req.user);
     } else if (req.user.modelName === "Parent" && req.user.children !== null && req.user.children.length > 0) {
         instructors = req.user.getChildrenInstructors();
