@@ -12,13 +12,19 @@ const checkAuth = require('../../middleware/check-auth');
 router.get("/request/:requestId", checkAuth, async (req, res) => {
     Request.findById(req.params.requestId).then(request => {
         if (request === null) {
-            return res.status(404).json({
+            return res.status(401).json({
                 success: false,
-                message: "Invalid resource ID"
+                message: "Unauthorized" // for security reasons as to not let users brute force to get all document ids
             });
         }
-    
-        if (request.issuer._id == req.userData.userId) {
+
+        // find if access should be allowed to the user. if the user is an instructor check if he is an instructor of the student who made the request if not set to false 
+        // otherwise if user is the maker of the request set true
+        let accessAllowed = (await Instructor.isInstructor(req.userData.userId)) ? (await Instructor.findById(req.userData.userId)).isInstructorOfStudent(request.issuer._id) :
+            request.issuer._id == req.userData.userId; // loose equals inorder to have type interpolation between string id and object id 
+
+
+        if (accessAllowed) {
             res.status(200).json({
                 success: true,
                 message: "Found resource",
@@ -38,7 +44,7 @@ router.get("/request/:requestId", checkAuth, async (req, res) => {
             error: err
         })
     });
-    
+
 
 });
 
@@ -76,7 +82,7 @@ router.post("/request", checkAuth, async (req, res) => {
         res.status(201).json({
             success: true,
             message: "Created request!",
-            request
+            request: doc.toJSON()
         });
     }).catch(err => {
         console.error(err);
@@ -98,8 +104,12 @@ router.delete("/request/:requestId", checkAuth, async (req, res) => {
         });
     }
 
-    if (request.issuer._id == req.userData.userId || Instructor.exists({ _id: req.userData.userId })) {
-        Request.deleteOne({ _id: request._id }).then(() => {
+    if (request.issuer._id == req.userData.userId || Instructor.exists({
+        _id: req.userData.userId
+    })) {
+        Request.deleteOne({
+            _id: request._id
+        }).then(() => {
             res.status(204).json({
                 success: true,
                 message: "Deleted resource",

@@ -44,6 +44,7 @@ studentSchema.methods.comparePassword = function(candidatePassword, cb) {
     });
 };
 
+
 const studentModel = mongoose.model('Student', studentSchema, 'students');
 
 module.exports = studentModel;
