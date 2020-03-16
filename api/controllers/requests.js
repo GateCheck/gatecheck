@@ -1,13 +1,10 @@
-const express = require('express');
 const moment = require('moment');
 const mongoose = require('mongoose');
-const router = express.Router();
 const {
     Request
-} = require('../../models/index');
-const getAuthenticatedUser = require('../../middleware/get-authenticated-user');
+} = require('../models/index');
 
-router.get("/request/:requestId", getAuthenticatedUser, async (req, res) => {
+exports.get_request = async (req, res) => {
     Request.findById(req.params.requestId).then(async request => {
         if (request === null) {
             return res.status(401).json({
@@ -40,18 +37,9 @@ router.get("/request/:requestId", getAuthenticatedUser, async (req, res) => {
             error: err
         })
     });
+}
 
-
-});
-
-router.post("/request", getAuthenticatedUser, async (req, res) => {
-    if (req.user === null) {
-        return res.status(401).json({
-            success: false,
-            message: "Unauthorized"
-        });
-    }
-
+exports.create_request = async (req, res) => {
     const {
         details,
         reason,
@@ -90,9 +78,9 @@ router.post("/request", getAuthenticatedUser, async (req, res) => {
         });
     });
 
-});
+}
 
-router.delete("/request/:requestId", getAuthenticatedUser, async (req, res) => {
+exports.delete_request = async (req, res) => {
     const request = await Request.findById(req.params.requestId);
     if (request === null) {
         return res.status(404).json({
@@ -117,8 +105,26 @@ router.delete("/request/:requestId", getAuthenticatedUser, async (req, res) => {
             message: "Unauthorized"
         });
     }
-});
+}
 
 
+exports.get_all_requests = async (req, res) => {
+    const query = Request.find();
 
-module.exports = router;
+    if (req.user.administrative_level > 2)
+        query.then(requestDocs => {
+            res.status(200).json({
+                success: true,
+                message: "Requests made by: " + req.userData.fullName,
+                requests: requestDocs.map(requestDoc => requestDoc.toJSON())
+            });
+        })
+    else
+        query.where({ issuer: req.user._id }).then(requestDocs => {
+            res.status(200).json({
+                success: true,
+                message: "Requests made by: " + req.userData.fullName,
+                requests: requestDocs.map(requestDoc => requestDoc.toJSON())
+            });
+        });
+}

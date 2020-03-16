@@ -1,54 +1,4 @@
-const {
-    Student,
-    Parent,
-    Instructor
-} = require('../../models/index');
 const jwt = require('jsonwebtoken');
-const {
-    getUserByEmail,
-    getUserByRealId,
-    getUserByUsername
-} = require('../../utils');
-
-/**
- * Return null if no IDs or map all IDs into documents.
- * @param {String[]} ids the ids to map
- * @param {Model} model mongoose model for querying by id
- */
-const nullOrMapDocumentReferences = (ids, model) => {
-    if (ids === undefined || ids === null) return null;
-    return ids.map(id => model.findById(id));
-}
-
-/**
- * build the user model for signup
- * @param {Map} payload 
- * @param {String} type 
- * @param {String[]} instructorIDs 
- * @param {String[]} parentIDs 
- * @param {String[]} studentIDs 
- * @param {String[]} partnerIDs 
- * @param {String[]} childrenIDs 
- * @param {String} school 
- */
-const buildModelSignup = (payload, type, instructorIDs, parentIDs, studentIDs, partnerIDs, childrenIDs, school) => {
-    if (type === 'student') {
-        payload.instructors = nullOrMapDocumentReferences(instructorIDs, Instructor);
-        payload.parents = nullOrMapDocumentReferences(parentIDs, Instructor);
-        payload.school = school;
-        return new Student(payload);
-    } else if (type === 'parent') {
-        payload.children = nullOrMapDocumentReferences(childrenIDs, Instructor);
-        payload.partners = nullOrMapDocumentReferences(partnerIDs, Instructor);
-        return new Parent(payload);
-    } else if (type === 'instructor') {
-        payload.students = nullOrMapDocumentReferences(studentIDs, Instructor);
-        payload.school = school;
-        return new Instructor(payload);
-    }
-
-    throw new Error('Invalid user type: ' + type);
-}
 
 class LoginController {
     constructor(authEmailOrUsernameOrID, password, response) {
@@ -134,7 +84,4 @@ class LoginController {
     }
 }
 
-module.exports = {
-    buildModelSignup,
-    LoginController
-}
+module.exports = LoginController;

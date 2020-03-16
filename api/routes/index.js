@@ -1,21 +1,13 @@
-const { studentRoute, studentsRoute } = require('./student_routes/index'); 
-const { requestRoute, requestsRoute } = require('./request_routes/index'); 
-const auth = require('./auth/auth');
+const studentRoutes = require('./students');
+const parentRoutes = require('./parents');
+const instructorRoutes = require('./instructors');
+const requestRoutes = require('./requests');
+const auth = require('./auth');
 
 module.exports = {
-    studentRoutes: {
-        studentRoute,
-        studentsRoute
-    },
-    parentRotues: {
-
-    },
-    instructorRoutes: {
-
-    },
-    requestRoutes: {
-        requestRoute,
-        requestsRoute
-    },
+    studentRoutes,
+    parentRoutes,
+    instructorRoutes,
+    requestRoutes,
     auth
 }
