@@ -5,7 +5,7 @@ const cookieParser = require('cookie-parser');
 const express = require('express');
 const cors = require('cors');
 
-const { auth, instructorRoutes, parentRoutes, requestRoutes, studentRoutes } = require('./api/routes/index');
+const { authRoutes, instructorRoutes, parentRoutes, requestRoutes, studentRoutes } = require('./api/routes/');
 const app = express();
 
 mongoose.connect(
@@ -24,6 +24,6 @@ app.use('/api', instructorRoutes);
 app.use('/api', parentRoutes);
 app.use('/api', requestRoutes);
 app.use('/api', studentRoutes);
-app.use('/api', auth);
+app.use('/api', authRoutes);
 
 module.exports = app;
