@@ -5,9 +5,9 @@ const router = express.Router();
 const {
     Request
 } = require('../../models/index');
-const getUser = require('../../middleware/get-user');
+const getAuthenticatedUser = require('../../middleware/get-authenticated-user');
 
-router.get("/request/:requestId", getUser, async (req, res) => {
+router.get("/request/:requestId", getAuthenticatedUser, async (req, res) => {
     Request.findById(req.params.requestId).then(async request => {
         if (request === null) {
             return res.status(401).json({
@@ -44,7 +44,7 @@ router.get("/request/:requestId", getUser, async (req, res) => {
 
 });
 
-router.post("/request", getUser, async (req, res) => {
+router.post("/request", getAuthenticatedUser, async (req, res) => {
     if (req.user === null) {
         return res.status(401).json({
             success: false,
@@ -92,7 +92,7 @@ router.post("/request", getUser, async (req, res) => {
 
 });
 
-router.delete("/request/:requestId", getUser, async (req, res) => {
+router.delete("/request/:requestId", getAuthenticatedUser, async (req, res) => {
     const request = await Request.findById(req.params.requestId);
     if (request === null) {
         return res.status(404).json({

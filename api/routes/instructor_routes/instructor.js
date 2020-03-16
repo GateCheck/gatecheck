@@ -1,10 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const { Instructor } = require('../../models/index');
-const getUser = require('../../middleware/get-user');
+const getAuthenticatedUser = require('../../middleware/get-authenticated-user');
 const { removeConfidentialData } = require('../../utils');
 
-router.get("/instructor/:instructorId", getUser, async (req, res) => {
+router.get("/instructor/:instructorId", getAuthenticatedUser, async (req, res) => {
     const instructor = await Instructor.findById(req.params.instructorId);
     if (instructor === null)
         return res.status(401).json({

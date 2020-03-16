@@ -3,10 +3,9 @@ const router = express.Router();
 const {
     Request
 } = require('../../models/index');
-const getUser = require('../../middleware/get-user');
-const mongoose = require('mongoose')
+const getAuthenticatedUser = require('../../middleware/get-authenticated-user');
 
-router.get("/requests", getUser, async (req, res) => {
+router.get("/requests", getAuthenticatedUser, async (req, res) => {
     const query = Request.find();
 
     if (req.user.administrative_level > 2)

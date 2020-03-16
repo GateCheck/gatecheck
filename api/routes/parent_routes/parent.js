@@ -1,10 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const { Parent } = require('../../models/index');
-const getUser = require('../../middleware/get-user');
+const getAuthenticatedUser = require('../../middleware/get-authenticated-user');
 const { removeConfidentialData } = require('../../utils');
 
-router.get("/parent/:parentId", getUser, async (req, res) => {
+router.get("/parent/:parentId", getAuthenticatedUser, async (req, res) => {
     const parent = await Parent.findById(req.params.parentId);
     if (parent === null)
         return res.status(401).json({

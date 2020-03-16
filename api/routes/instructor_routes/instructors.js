@@ -3,10 +3,10 @@ const router = express.Router();
 const {
     Instructor
 } = require('../../models/index');
-const getUser = require('../../middleware/get-user');
+const getAuthenticatedUser = require('../../middleware/get-authenticated-user');
 const { removeConfidentialData } = require('../../utils');
 
-router.get("/instructors", getUser, async (req, res) => {
+router.get("/instructors", getAuthenticatedUser, async (req, res) => {
     const instructors = [];
     if (req.user.administrative_level > 2) {
         Instructor.find().then(instructorDocs => {
