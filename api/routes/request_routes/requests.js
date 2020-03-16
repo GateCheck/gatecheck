@@ -1,24 +1,30 @@
 const express = require('express');
 const router = express.Router();
 const {
-    Request,
-    Student
+    Request
 } = require('../../models/index');
-const checkAuth = require('../../middleware/check-auth');
+const getUser = require('../../middleware/get-user');
 const mongoose = require('mongoose')
 
-router.get("/requests", checkAuth, async (req, res) => {
-    const { userId, fullName } = req.userData;
+router.get("/requests", getUser, async (req, res) => {
     const query = Request.find();
-    Student.findOne({ _id: userId }).then(student => {
-        query.where({ issuer: student._id }).then(requestDocs => {
+
+    if (req.user.administrative_level > 2)
+        query.then(requestDocs => {
             res.status(200).json({
                 success: true,
-                message: "Requests made by: " + fullName,
+                message: "Requests made by: " + req.userData.fullName,
+                requests: requestDocs.map(requestDoc => requestDoc.toJSON())
+            });
+        })
+    else
+        query.where({ issuer: req.user._id }).then(requestDocs => {
+            res.status(200).json({
+                success: true,
+                message: "Requests made by: " + req.userData.fullName,
                 requests: requestDocs.map(requestDoc => requestDoc.toJSON())
             });
         });
-    });
 });
 
 module.exports = router;

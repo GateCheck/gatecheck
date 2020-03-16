@@ -3,10 +3,7 @@ const moment = require('moment');
 const mongoose = require('mongoose');
 const router = express.Router();
 const {
-    Request,
-    Student,
-    User,
-    Instructor
+    Request
 } = require('../../models/index');
 const getUser = require('../../middleware/get-user');
 
@@ -21,7 +18,7 @@ router.get("/request/:requestId", getUser, async (req, res) => {
 
         // find if access should be allowed to the user. if the user is an instructor check if he is an instructor of the student who made the request if not set to false 
         // otherwise if user is the maker of the request set true
-        let accessAllowed = (req.modelName === 'Instructor' ? await req.user.isInstructorOfId(request.issuer._id) : request.issuer._id == req.userData.userId);
+        let accessAllowed = req.user.administrative_level > 2 || (req.modelName === 'Instructor' ? await req.user.isInstructorOfId(request.issuer._id) : request.issuer._id == req.userData.userId);
 
         if (accessAllowed) {
             res.status(200).json({
@@ -104,7 +101,7 @@ router.delete("/request/:requestId", getUser, async (req, res) => {
         });
     }
 
-    if (request.issuer._id === req.user._id) { // loose equals inorder to have type interpolation between string id and object id 
+    if (req.user.administrative_level > 2 || request.issuer._id === req.user._id) { // loose equals inorder to have type interpolation between string id and object id 
         Request.deleteOne({
             _id: request._id
         }).then(() => {

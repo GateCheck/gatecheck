@@ -12,9 +12,14 @@ const getUser = async (userId) => {
 
 module.exports = (req, res, next) => {
     try {
-        const decoded = jwt.verify(req.body.token, process.env.JWT_KEY);
+        const decoded = jwt.verify(req.headers.authorization.split(" ")[1], process.env.JWT_KEY);
         req.userData = decoded;
         getUser(decoded.userId).then(([ user, modelName ]) => {
+            if (user === null) {
+                return res.status(401).json({
+                    message: 'Auth failed'
+                })
+            }
             user.modelName = modelName;
             req.user = user;
             next();

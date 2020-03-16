@@ -103,7 +103,7 @@ class LoginController {
             profilePicture: user.profile_picture,
             userId: user._id
         }, process.env.JWT_KEY, {
-            expiresIn: '1h'
+            expiresIn: '5h'
         });
 
         this.res.status(200).json({
