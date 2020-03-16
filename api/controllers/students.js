@@ -30,7 +30,7 @@ exports.get_student = async (req, res, next) => {
 }
 
 exports.get_all_students = async (req, res) => {
-    const students = [];
+    let students = [];
     
     if (req.user.administrative_level > 2) students = await Student.find();
     else if (req.user.modelName === 'Student') students.push(req.user);
