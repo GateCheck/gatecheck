@@ -12,7 +12,7 @@ router.get("/parent/:parentId", getAuthenticatedUser, async (req, res) => {
             message: "Unauthorized"
         });
     const isInstructorRequesting = await parent.hasChildWithInstructorOfId(req.userData.userId);
-    let allowAccess = req.user.administrative_level > 2 || // admin requesting
+    const allowAccess = req.user.administrative_level > 2 || // admin requesting
         req.userData.userId == req.params.parentId || // same user requesting
         await parent.hasChildWithId(req.userData.userId) || // child of parent requesting
         isInstructorRequesting // instructor of a child of the parent requesting

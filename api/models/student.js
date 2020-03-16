@@ -4,7 +4,7 @@ const { UserSchema: userSchema } = require('./user');
 const bcrypt = require('bcryptjs');
 const SALT_WORK_FACTOR = 10;
 
-const studentSchema = extendSchema(userSchema, {
+const StudentSchema = extendSchema(userSchema, {
     instructors: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Instructor'
@@ -16,7 +16,7 @@ const studentSchema = extendSchema(userSchema, {
     school: String
 });
 
-studentSchema.pre('save', function(next) {
+StudentSchema.pre('save', function(next) {
     var user = this;
 
     // only hash the password if it has been modified (or is new)
@@ -37,14 +37,34 @@ studentSchema.pre('save', function(next) {
     });
 });
 
-studentSchema.methods.comparePassword = function(candidatePassword, cb) {
+StudentSchema.methods.comparePassword = function(candidatePassword, cb) {
     bcrypt.compare(candidatePassword, this.password, function(err, isMatch) {
         if (err) return cb(err);
         cb(null, isMatch);
     });
 };
 
+StudentSchema.methods.hasParentWithIdOf = function(id) {
+    return new Promise((resolve, reject) => {
+        if (this.parents === null || this.parents.length < 1) return resolve(false);
+        for (const parent of this.parents) {
+            if (parent._id == id) return resolve(true);
+        }
+        return resolve(false);
+    })
+}
 
-const studentModel = mongoose.model('Student', studentSchema, 'students');
+StudentSchema.methods.hasInstructorWithIdOf = function(id) {
+    return new Promise((resolve, reject) => {
+        if (this.instructors === null || this.instructors.length < 1) return resolve(false);
+        for (const instructor of this.instructors) {
+            if (instructor._id == id) return resolve(true);
+        }
+        return resolve(false);
+    })
+}
+
+
+const studentModel = mongoose.model('Student', StudentSchema, 'students');
 
 module.exports = studentModel;
