@@ -47,11 +47,11 @@ InstructorSchema.statics.isInstructor = function(id) {
     });
 }
 
-InstructorSchema.methods.isInstructorOfStudent = function(studentId) {
+InstructorSchema.methods.isInstructorOfId = function(id) {
     return new Promise((resolve, reject) => {
         if (this.students === null) return resolve(false);
         for (const student of this.students) {
-            if (student._id == studentId) return resolve(true);
+            if (student._id == id) return resolve(true);
         }
         return resolve(false)
     });

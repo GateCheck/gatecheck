@@ -5,12 +5,13 @@ const router = express.Router();
 const {
     Request,
     Student,
+    User,
     Instructor
 } = require('../../models/index');
-const checkAuth = require('../../middleware/check-auth');
+const getUser = require('../../middleware/get-user');
 
-router.get("/request/:requestId", checkAuth, async (req, res) => {
-    Request.findById(req.params.requestId).then(request => {
+router.get("/request/:requestId", getUser, async (req, res) => {
+    Request.findById(req.params.requestId).then(async request => {
         if (request === null) {
             return res.status(401).json({
                 success: false,
@@ -20,9 +21,7 @@ router.get("/request/:requestId", checkAuth, async (req, res) => {
 
         // find if access should be allowed to the user. if the user is an instructor check if he is an instructor of the student who made the request if not set to false 
         // otherwise if user is the maker of the request set true
-        let accessAllowed = (await Instructor.isInstructor(req.userData.userId)) ? (await Instructor.findById(req.userData.userId)).isInstructorOfStudent(request.issuer._id) :
-            request.issuer._id == req.userData.userId; // loose equals inorder to have type interpolation between string id and object id 
-
+        let accessAllowed = (req.modelName === 'Instructor' ? await req.user.isInstructorOfId(request.issuer._id) : request.issuer._id == req.userData.userId);
 
         if (accessAllowed) {
             res.status(200).json({
@@ -48,9 +47,8 @@ router.get("/request/:requestId", checkAuth, async (req, res) => {
 
 });
 
-router.post("/request", checkAuth, async (req, res) => {
-    const user = await Student.findById(req.userData.userId).exec();
-    if (user === null) {
+router.post("/request", getUser, async (req, res) => {
+    if (req.user === null) {
         return res.status(401).json({
             success: false,
             message: "Unauthorized"
@@ -70,7 +68,7 @@ router.post("/request", checkAuth, async (req, res) => {
         accepted: null,
         details,
         issuedDate: moment.now(),
-        issuer: user,
+        issuer: req.user,
         reason,
         title,
         validTill: moment().add(moment.duration({
@@ -97,7 +95,7 @@ router.post("/request", checkAuth, async (req, res) => {
 
 });
 
-router.delete("/request/:requestId", checkAuth, async (req, res) => {
+router.delete("/request/:requestId", getUser, async (req, res) => {
     const request = await Request.findById(req.params.requestId);
     if (request === null) {
         return res.status(404).json({
@@ -106,7 +104,7 @@ router.delete("/request/:requestId", checkAuth, async (req, res) => {
         });
     }
 
-    if (request.issuer._id == req.userData.userId) { // loose equals inorder to have type interpolation between string id and object id 
+    if (request.issuer._id === req.user._id) { // loose equals inorder to have type interpolation between string id and object id 
         Request.deleteOne({
             _id: request._id
         }).then(() => {
