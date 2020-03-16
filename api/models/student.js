@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const { extendSchema } = require('../../utils');
-const { userSchema } = require('./user');
+const { UserSchema: userSchema } = require('./user');
 const bcrypt = require('bcryptjs');
 const SALT_WORK_FACTOR = 10;
 

@@ -53,15 +53,17 @@ router.post("/request", checkAuth, async (req, res) => {
     if (user === null) {
         return res.status(401).json({
             success: false,
-            message: "You must be logged in to perform this action!"
+            message: "Unauthorized"
         });
     }
+
     const {
         details,
         reason,
         title,
         goLocation
     } = req.body;
+
     const request = new Request({
         _id: new mongoose.Types.ObjectId(),
         accepted: false,
@@ -104,13 +106,11 @@ router.delete("/request/:requestId", checkAuth, async (req, res) => {
         });
     }
 
-    if (request.issuer._id == req.userData.userId || Instructor.exists({
-        _id: req.userData.userId
-    })) {
+    if (request.issuer._id == req.userData.userId) { // loose equals inorder to have type interpolation between string id and object id 
         Request.deleteOne({
             _id: request._id
         }).then(() => {
-            res.status(204).json({
+            res.status(200).json({
                 success: true,
                 message: "Deleted resource",
                 request

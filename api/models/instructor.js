@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { userSchema } = require('./user');
+const { UserSchema: userSchema } = require('./user');
 const { extendSchema } = require('../../utils');
 const { Student } = require('./index');
 const bcrypt = require('bcryptjs');
