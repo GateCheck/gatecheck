@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
 
-const ParentsController = require('../../controllers/parents');
+const ParentsController = require('../controllers/parents');
 
-const getAuthenticatedUser = require('../../middleware/get-authenticated-user');
+const getAuthenticatedUser = require('../middleware/get-authenticated-user');
 
 
 router.get("/parents", getAuthenticatedUser, ParentsController.get_all_parents);

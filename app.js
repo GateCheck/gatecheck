@@ -5,7 +5,7 @@ const cookieParser = require('cookie-parser');
 const express = require('express');
 const cors = require('cors');
 
-const { studentRoutes, auth, requestRoutes } = require('./api/routes/index');
+const { auth, instructorRoutes, parentRoutes, requestRoutes, studentRoutes } = require('./api/routes/index');
 const app = express();
 
 
@@ -18,11 +18,11 @@ app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(cors());
 
-app.use('/api', studentRoutes.studentRoute);
-app.use('/api', studentRoutes.studentsRoute);
-app.use('/api', requestRoutes.requestRoute);
-app.use('/api', requestRoutes.requestsRoute);
-app.use('/api/auth', auth);
+app.use('/api', instructorRoutes);
+app.use('/api', parentRoutes);
+app.use('/api', requestRoutes);
+app.use('/api', studentRoutes);
+app.use('/api', auth);
 
 
 

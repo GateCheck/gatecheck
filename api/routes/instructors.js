@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
 
-const InstructorsController = require('../../controllers/instructors');
+const InstructorsController = require('../controllers/instructors');
 
-const getAuthenticatedUser = require('../../middleware/get-authenticated-user');
+const getAuthenticatedUser = require('../middleware/get-authenticated-user');
 
 
 router.get("/instructors", getAuthenticatedUser, InstructorsController.get_all_instructors);

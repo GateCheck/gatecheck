@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
 
-const RequestsController = require('../../controllers/requests');
+const RequestsController = require('../controllers/requests');
 
-const getAuthenticatedUser = require('../../middleware/get-authenticated-user');
+const getAuthenticatedUser = require('../middleware/get-authenticated-user');
 
 router.get("/requests", getAuthenticatedUser, RequestsController.get_all_requests);
 
