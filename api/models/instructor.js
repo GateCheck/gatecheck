@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const { UserSchema: userSchema } = require('./user');
 const { extendSchema } = require('../../utils');
-const { Student } = require('./index');
+const { Student, Parent} = require('./index');
 const bcrypt = require('bcryptjs');
 const SALT_WORK_FACTOR = 10;
 
@@ -49,11 +49,26 @@ InstructorSchema.statics.isInstructor = function (id) {
 
 InstructorSchema.methods.isInstructorOfId = function (id) {
     return new Promise((resolve, reject) => {
-        if (this.students === null) return resolve(false);
+        if (this.students === null || this.students.length < 1) return resolve(false);
         for (const student of this.students) {
             if (student._id == id) return resolve(true);
         }
         return resolve(false)
+    });
+}
+
+InstructorSchema.methods.isInstructorOfChildWithParentIdOf = function (id) {
+    return new Promise((resolve, reject) => {
+        Parent.findById(id).then(parent => {
+            if (parent === null || parent.children === null || parent.children.length < 1) return resolve(false);
+            for (const child of parent.children) {
+                if (child.instructors === null || child.instructors.length < 1) continue;
+                for (const instructor of child.instructors) {
+                    if (this._id == instructor._id) return resolve(true);
+                }
+            }
+            return resolve(false);
+        }).catch(err => reject(err));
     });
 }
 

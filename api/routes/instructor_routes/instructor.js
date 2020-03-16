@@ -1,71 +1,31 @@
 const express = require('express');
 const router = express.Router();
-const mongoose = require('mongoose');
-const {
-    Student,
-    Instructor
-} = require('../../models/index');
-const validator = require('validator').default;
+const { Instructor } = require('../../models/index');
+const getUser = require('../../middleware/get-user');
+const { removeConfidentialData } = require('../../utils');
 
-// get instructor from db
-router.get("/instructor/:id", (req, res) => {
-    const id = req.params.id;
-    if (id === undefined) {
-        return res.status(400).json({
+router.get("/instructor/:instructorId", getUser, async (req, res) => {
+    const instructor = await Instructor.findById(req.params.instructorId);
+    if (instructor === null)
+        return res.status(401).json({
             success: false,
-            error: 'Invalid Database ID'
+            message: "Unauthorized"
         });
-    }
-    Instructor.findById(id).exec().then(instructorDoc => {
-        const instructor = instructorDoc.toJSON();
-        delete instructor.password;
-        res.status(200).json({
-            success: true,
-            instructor
-        });
-    }).catch(err => {
-        console.error(err);
-        res.status(400).json({
+    let allowAccess = req.user.administrative_level > 2 || // admin requesting
+        req.userData.userId == req.params.instructorId || // same user requesting
+        instructor.isInstructorOfId(req.user._id) || // student of instructor requesting
+        instructor.isInstructorOfChildWithParentIdOf(req.user._id); // parent requesting
+    if (!allowAccess)
+        return res.status(401).json({
             success: false,
-            error: `Couldn't find a document with ID "${id}".`
+            message: "Unauthorized"
         });
+    return res.status(200).json({
+        success: true,
+        message: 'Obtained instructor\'s data',
+        instructor: removeConfidentialData(instructor, req.user.administrative_level > 2 || req.userData.userId == req.params.parentId)
     });
 });
 
-// get instructor by real id or email or username
-router.get("/instructor", (req, res) => {
-    const chosen = req.query.id || req.query.email || req.query.username;
-    if (req.query.id !== undefined || req.query.email !== undefined || req.query.username !== undefined) {
-
-        const cond = req.query.id !== undefined ? {
-            id_number: Number.parseInt(chosen)
-        } : req.query.email !== undefined ? {
-            "contact.email": chosen
-
-        } : {
-            username: chosen
-        };
-
-        Instructor.findOne(cond).then(instructorDoc => {
-            const instructor = instructorDoc.toJSON();
-            delete instructor.password;
-            res.status(200).json({
-                success: true,
-                instructor
-            });
-        }).catch(err => {
-            console.error(err);
-            res.status(400).json({
-                success: false,
-                error: "Can't find user."
-            })
-        });
-    } else {
-        res.status(400).json({
-            success: false,
-            error: "Pass a username, email or id in the query."
-        })
-    }
-});
 
 module.exports = router;

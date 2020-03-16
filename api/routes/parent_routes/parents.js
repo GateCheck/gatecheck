@@ -2,16 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { Parent } = require('../../models/index');
 const getUser = require('../../middleware/get-user');
-
-const removeConfidentialData = (doc, onlyPassword) => {
-    const json = doc.toJSON();
-    delete json.password;
-    if (!onlyPassword) {
-        delete json.id_number;
-        delete json.administrative_level;
-    }
-    return json;
-}
+const { removeConfidentialData } = require('../../utils');
 
 router.get("/parents", getUser, async (req, res) => {
     const parents = [];
@@ -35,7 +26,7 @@ router.get("/parents", getUser, async (req, res) => {
 
     res.status(200).json({
         success: true,
-        parents: req.user.administrative_level > 2 ? parents.map(parent => removeConfidentialData(parent, true)) : parents.map(parent => removeConfidentialData(parent, false))
+        parents: parents.map(parent => removeConfidentialData(parent, req.user.administrative_level > 2 || req.userData.userId == req.params.parentId))
     });
 });
 

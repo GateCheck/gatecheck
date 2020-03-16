@@ -4,17 +4,7 @@ const {
     Instructor
 } = require('../../models/index');
 const getUser = require('../../middleware/get-user');
-
-
-const removeConfidentialData = (doc, onlyPassword) => {
-    const json = doc.toJSON();
-    delete json.password;
-    if (!onlyPassword) {
-        delete json.id_number;
-        delete json.administrative_level;
-    }
-    return json;
-}
+const { removeConfidentialData } = require('../../utils');
 
 router.get("/instructors", getUser, async (req, res) => {
     const instructors = [];
@@ -35,7 +25,7 @@ router.get("/instructors", getUser, async (req, res) => {
     res.status(200).json({
         success: true,
         message: 'Instructors relating to user: ' + req.userData.fullName,
-        instructors: req.user.administrative_level > 2 ? instructors.map(instructor => removeConfidentialData(instructor, true)) : instructors.map(instructor => removeConfidentialData(instructor, false))
+        instructors: instructors.map(instructor => removeConfidentialData(instructor, req.user.administrative_level > 2 || req.userData.userId == req.params.parentId))
     });
 });
 
