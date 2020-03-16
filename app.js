@@ -8,9 +8,11 @@ const cors = require('cors');
 const { auth, instructorRoutes, parentRoutes, requestRoutes, studentRoutes } = require('./api/routes/index');
 const app = express();
 
-
-mongoose.connect(`mongodb+srv://gatecheck_admin:${process.env.MONGODB_ATLAS_PW}@gatecheck-6ixdc.mongodb.net/test?retryWrites=true&w=majority`, { useNewUrlParser: true, useUnifiedTopology: true });
-
+mongoose.connect(
+	`mongodb+srv://gatecheck_admin:${process.env
+		.MONGODB_ATLAS_PW}@gatecheck-6ixdc.mongodb.net/test?retryWrites=true&w=majority`,
+	{ useNewUrlParser: true, useUnifiedTopology: true }
+);
 
 app.use(morgan('dev'));
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -23,7 +25,5 @@ app.use('/api', parentRoutes);
 app.use('/api', requestRoutes);
 app.use('/api', studentRoutes);
 app.use('/api', auth);
-
-
 
 module.exports = app;
