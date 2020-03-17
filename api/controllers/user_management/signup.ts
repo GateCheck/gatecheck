@@ -5,17 +5,6 @@ import { Student, User } from '../../models';
 import { IUser, IStudent } from '../../..';
 import { Request, Response } from 'express';
 
-interface createUserPayload {
-	loginUsername: IStudent['loginUsername'],
-	phone: IStudent['contact']['email'],
-	password: IStudent['password'],
-	fullName: IStudent['full_name'],
-	idNumber: IStudent['id_number'],
-	instructorIDs: IStudent['_id'],
-	parentIDs: IStudent['_id'],
-	profilePicture: IStudent['profile_picture'],
-	school: IStudent['school']
-}
 
 const createUser = async ({
 	loginUsername,
@@ -27,7 +16,7 @@ const createUser = async ({
 	parentIDs,
 	profilePicture,
 	school
-}: createUserPayload): Promise<IUser | string> => {
+}: RegisterUserPayload<IStudent>): Promise<IStudent | string> => {
 	if (password.length < 8) {
 		return 'Choose a stronger password!';
 	} else if (!validator.isEmail(loginUsername)) {

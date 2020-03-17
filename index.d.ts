@@ -68,6 +68,17 @@ export interface AuthenticatedRequest<T extends IUser> extends ExpressRequest {
     user: T
 }
 
+export interface RegisterUserPayload<T extends IStudent> {
+	loginUsername: T['loginUsername'],
+	phone: T['contact']['email'],
+	password: T['password'],
+	fullName: T['full_name'],
+	idNumber: T['id_number'],
+	instructorIDs: T['_id'],
+	parentIDs: T['_id'],
+	profilePicture: T['profile_picture'],
+	school: T['school']
+}
 
 declare enum AdministrativeLevel {
     One = 1,
@@ -80,3 +91,4 @@ declare enum UserKind {
     Parent = "Parent",
     Student = "Student"
 }
+
