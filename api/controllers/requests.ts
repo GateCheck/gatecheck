@@ -1,8 +1,11 @@
-const moment = require('moment');
-const mongoose = require('mongoose');
-const { Request } = require('../models/index');
+import { AuthenticatedRequest, IInstructor, IParent, IStudent } from '../..';
+import { Response } from 'express';
 
-exports.get_request = async (req, res) => {
+import moment from 'moment';
+import { Types } from 'mongoose';
+import { Request } from '../models';
+
+export const get_request = async (req: AuthenticatedRequest<IInstructor & IParent & IStudent>, res: Response) => {
 	Request.findById(req.params.requestId)
 		.then(async (request) => {
 			if (request === null) {
@@ -16,7 +19,7 @@ exports.get_request = async (req, res) => {
 			// otherwise if user is the maker of the request set true
 			let accessAllowed =
 				req.user.administrative_level > 2 ||
-				(req.modelName === 'Instructor'
+				(req.user.kind === 'Instructor'
 					? await req.user.isInstructorOfStudentWithIdOf(request.issuer._id)
 					: request.issuer._id == req.userData.userId);
 
@@ -43,25 +46,19 @@ exports.get_request = async (req, res) => {
 		});
 };
 
-exports.create_request = async (req, res) => {
+export const create_request = async (req: AuthenticatedRequest<IInstructor & IParent & IStudent>, res: Response) => {
 	const { details, reason, title, goLocation } = req.body;
 
 	const request = new Request({
-		_id: new mongoose.Types.ObjectId(),
+		_id: new Types.ObjectId(),
 		accepted: false,
-		accepted: null,
+		acceptedDate: null,
 		details,
-		issuedDate: moment.now(),
+		issuedDate: moment().unix(),
 		issuer: req.user,
 		reason,
 		title,
-		validTill: moment()
-			.add(
-				moment.duration({
-					day: 1
-				})
-			)
-			.get(),
+		validTill: moment().unix() + 24 * 60 * 60,
 		goLocation,
 		backAtSchoolTime: null
 	});
@@ -85,7 +82,7 @@ exports.create_request = async (req, res) => {
 		});
 };
 
-exports.delete_request = async (req, res) => {
+export const delete_request = async (req: AuthenticatedRequest<IInstructor & IParent & IStudent>, res: Response) => {
 	const request = await Request.findById(req.params.requestId);
 	if (request === null) {
 		return res.status(404).json({
@@ -95,7 +92,6 @@ exports.delete_request = async (req, res) => {
 	}
 
 	if (req.user.administrative_level > 2 || request.issuer._id === req.user._id) {
-		// loose equals inorder to have type interpolation between string id and object id
 		Request.deleteOne({
 			_id: request._id
 		}).then(() => {
@@ -113,7 +109,7 @@ exports.delete_request = async (req, res) => {
 	}
 };
 
-exports.get_all_requests = async (req, res) => {
+export const get_all_requests = async (req: AuthenticatedRequest<IInstructor & IParent & IStudent>, res: Response) => {
 	const query = Request.find();
 
 	if (req.user.administrative_level > 2)
@@ -133,3 +129,5 @@ exports.get_all_requests = async (req, res) => {
 			});
 		});
 };
+
+export default { get_all_requests, get_request, delete_request, create_request };

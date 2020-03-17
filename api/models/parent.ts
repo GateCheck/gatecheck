@@ -1,17 +1,18 @@
-const mongoose = require('mongoose');
-const { User } = require('./user');
+import { Schema, Types } from 'mongoose';
+import User from './user';
+import { IInstructor, IParent } from '../..';
 
-const ParentSchema = new mongoose.Schema(
+const ParentSchema = new Schema(
 	{
 		partners: [
 			{
-				type: mongoose.Schema.Types.ObjectId,
+				type: Schema.Types.ObjectId,
 				ref: 'Parent'
 			}
 		],
 		children: [
 			{
-				type: mongoose.Schema.Types.ObjectId,
+				type: Schema.Types.ObjectId,
 				ref: 'Student'
 			}
 		]
@@ -24,7 +25,7 @@ const ParentSchema = new mongoose.Schema(
  * @param {String | mongoose.Types.ObjectId} id the id to compare against
  * @returns {Promise<Boolean>} true if the parent given in the `this` context has a child with the id given
  */
-ParentSchema.methods.hasChildWithIdOf = function(id) {
+ParentSchema.methods.hasChildWithIdOf = function(id: string): Promise<boolean> {
 	return new Promise((resolve, reject) => {
 		if (this.children === null) return resolve(false);
 		for (const child of this.children) {
@@ -39,7 +40,7 @@ ParentSchema.methods.hasChildWithIdOf = function(id) {
  * @param {String | mongoose.Types.ObjectId} id the id to compare against
  * @returns {Promise<Boolean>} true if the parent given in the `this` context has a child who has an instructor with the given id
  */
-ParentSchema.methods.hasChildWithInstructorOfId = function(id) {
+ParentSchema.methods.hasChildWithInstructorOfId = function(id: string): Promise<boolean> {
 	return new Promise((resolve, reject) => {
 		if (this.children === null) return resolve(false);
 		for (const child of this.children) {
@@ -54,9 +55,9 @@ ParentSchema.methods.hasChildWithInstructorOfId = function(id) {
 
 /**
  * Gets the instructors of the children of the parent given.
- * @returns {Promise<Array<Document>>} returns the instructors of the children of a parent.
+ * @returns {Promise<Array<IInstructor>>} returns the instructors of the children of a parent.
  */
-ParentSchema.methods.getChildrenInstructors = function() {
+ParentSchema.methods.getChildrenInstructors = function(): Promise<Array<IInstructor>> {
 	return new Promise((resolve, reject) => {
 		if (this.children === null || this.children.length < 1) return resolve([]);
 		const instructors = [];
@@ -68,6 +69,4 @@ ParentSchema.methods.getChildrenInstructors = function() {
 	});
 };
 
-const parentModel = User.discriminator('Parent', ParentSchema);
-
-module.exports = parentModel;
+export default User.discriminator<IParent>('Parent', ParentSchema);

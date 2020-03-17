@@ -1,17 +1,18 @@
-const mongoose = require('mongoose');
-const { User } = require('./user');
+import { Schema, Types } from 'mongoose';
+import User from './user';
+import { IStudent } from '../..';
 
-const StudentSchema = new mongoose.Schema(
+const StudentSchema: Schema = new Schema(
 	{
 		instructors: [
 			{
-				type: mongoose.Schema.Types.ObjectId,
+				type: Schema.Types.ObjectId,
 				ref: 'Instructor'
 			}
 		],
 		parents: [
 			{
-				type: mongoose.Schema.Types.ObjectId,
+				type: Schema.Types.ObjectId,
 				ref: 'Parent'
 			}
 		],
@@ -25,7 +26,7 @@ const StudentSchema = new mongoose.Schema(
  * @param {String} id the id to compare against
  * @returns {Promise<Boolean>} true if the student given in the `this` context has a parent with the id given.
  */
-StudentSchema.methods.hasParentWithIdOf = function(id) {
+StudentSchema.methods.hasParentWithIdOf = function(id: string): Promise<boolean> {
 	return new Promise((resolve, reject) => {
 		if (this.parents === null || this.parents.length < 1) return resolve(false);
 		for (const parent of this.parents) {
@@ -40,7 +41,7 @@ StudentSchema.methods.hasParentWithIdOf = function(id) {
  * @param {String} id the id to compare against
  * @returns {Promise<Boolean>} true if the student given in the `this` context has an instructor with the id given.
  */
-StudentSchema.methods.hasInstructorWithIdOf = function(id) {
+StudentSchema.methods.hasInstructorWithIdOf = function(id: string): Promise<boolean> {
 	return new Promise((resolve, reject) => {
 		if (this.instructors === null || this.instructors.length < 1) return resolve(false);
 		for (const instructor of this.instructors) {
@@ -50,6 +51,4 @@ StudentSchema.methods.hasInstructorWithIdOf = function(id) {
 	});
 };
 
-const studentModel = User.discriminator('Student', StudentSchema);
-
-module.exports = studentModel;
+export default User.discriminator<IStudent>('Student', StudentSchema);

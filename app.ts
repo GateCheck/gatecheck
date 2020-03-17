@@ -1,14 +1,15 @@
-const mongoose = require('mongoose');
-const morgan = require('morgan');
-const bodyParser = require('body-parser');
-const cookieParser = require('cookie-parser');
-const express = require('express');
-const cors = require('cors');
+import { connect } from 'mongoose';
+import morgan from 'morgan';
+import bodyParser from 'body-parser';
+import cookieParser from 'cookie-parser';
+import express from 'express';
+import cors from 'cors';
 
-const { authRoutes, instructorRoutes, parentRoutes, requestRoutes, studentRoutes } = require('./api/routes/');
+import { authRoutes, instructorRoutes, parentRoutes, requestRoutes, studentRoutes } from './api/routes';
+
 const app = express();
 
-mongoose.connect(
+connect(
 	`mongodb+srv://gatecheck_admin:${process.env
 		.MONGODB_ATLAS_PW}@gatecheck-6ixdc.mongodb.net/test?retryWrites=true&w=majority`,
 	{ useNewUrlParser: true, useUnifiedTopology: true }
@@ -26,4 +27,4 @@ app.use('/api', requestRoutes);
 app.use('/api', studentRoutes);
 app.use('/api', authRoutes);
 
-module.exports = app;
+export default app;

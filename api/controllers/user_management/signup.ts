@@ -1,7 +1,21 @@
-const mongoose = require('mongoose');
-const validator = require('validator').default;
-const jwt = require('jsonwebtoken');
-const { Student, User } = require('../../models');
+import mongoose from 'mongoose';
+import validator from 'validator';
+import { sign } from 'jsonwebtoken';
+import { Student, User } from '../../models';
+import { IUser, IStudent } from '../../..';
+import { Request, Response } from 'express';
+
+interface createUserPayload {
+	loginUsername: IStudent['loginUsername'],
+	phone: IStudent['contact']['email'],
+	password: IStudent['password'],
+	fullName: IStudent['full_name'],
+	idNumber: IStudent['id_number'],
+	instructorIDs: IStudent['_id'],
+	parentIDs: IStudent['_id'],
+	profilePicture: IStudent['profile_picture'],
+	school: IStudent['school']
+}
 
 const createUser = async ({
 	loginUsername,
@@ -10,10 +24,10 @@ const createUser = async ({
 	fullName,
 	idNumber,
 	instructorIDs,
-	parentsIDs,
+	parentIDs,
 	profilePicture,
 	school
-}) => {
+}: createUserPayload): Promise<IUser | string> => {
 	if (password.length < 8) {
 		return 'Choose a stronger password!';
 	} else if (!validator.isEmail(loginUsername)) {
@@ -42,18 +56,18 @@ const createUser = async ({
 		school: school || null,
 		instructors:
 			instructorIDs !== null && instructorIDs !== undefined
-				? instructorIDs.map(async (id) => await User.findById(id))
+				? instructorIDs.map(async (id: string) => await User.findById(id))
 				: null,
 		parents:
-			parentsIDs !== null && parentsIDs !== undefined
-				? parentsIDs.map(async (id) => await User.findById(id))
+			parentIDs !== null && parentIDs !== undefined
+				? parentIDs.map(async (id: string) => await User.findById(id))
 				: null
 	};
 	return new Student(payload);
 };
 
-exports.signup = async (req, res) => {
-	let user;
+export const signup = async (req: Request, res: Response) => {
+	let user: IUser | string;
 	try {
 		user = await createUser(req.body);
 	} catch (err) {
@@ -64,7 +78,7 @@ exports.signup = async (req, res) => {
 		});
 	}
 
-	if (typeof user === typeof '') {
+	if (typeof user === "string") {
 		return res.status(400).json({
 			// show the reason the user was not created
 			success: false,
@@ -76,15 +90,14 @@ exports.signup = async (req, res) => {
 		.save()
 		.then((userDoc) => {
 			// user was created successfully! show user data
-			const token = jwt.sign(
+			const token = sign(
 				{
-					email: user.contact.email,
-					fullName: user.full_name,
-					school: user.school,
-					profilePicture: user.profile_picture,
-					userId: user._id
+					email: userDoc.contact.email,
+					fullName: userDoc.full_name,
+					profilePicture: userDoc.profile_picture,
+					userId: userDoc._id
 				},
-				process.env.JWT_KEY,
+				process.env.JWT_KEY!,
 				{
 					expiresIn: '5h'
 				}
@@ -97,7 +110,7 @@ exports.signup = async (req, res) => {
 				[userDoc.collection.name.slice(0, userDoc.collection.name.length - 1) + 'Created']: data
 			});
 		})
-		.catch((err) => {
+		.catch((err: Error) => {
 			console.error(err);
 			res.status(401).json({
 				success: false,

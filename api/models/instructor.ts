@@ -1,6 +1,7 @@
-const mongoose = require('mongoose');
-const { User } = require('./user');
-const Parent = require('./parent');
+import mongoose from 'mongoose';
+import User from './user';
+import Parent from './parent';
+import { IInstructor } from '../..';
 
 const InstructorSchema = new mongoose.Schema(
 	{
@@ -20,7 +21,7 @@ const InstructorSchema = new mongoose.Schema(
  * @param {String | mongoose.Types.ObjectId} id the id to compare against
  * @returns {Promise<Boolean>} true if the instructor is an instructor of the student of the given id
  */
-InstructorSchema.methods.isInstructorOfStudentWithIdOf = function(id) {
+InstructorSchema.methods.isInstructorOfStudentWithIdOf = function(id: string): Promise<boolean> {
 	return new Promise((resolve, reject) => {
 		if (this.students === null || this.students.length < 1) return resolve(false);
 		for (const student of this.students) {
@@ -35,7 +36,7 @@ InstructorSchema.methods.isInstructorOfStudentWithIdOf = function(id) {
  * @param {String | mongoose.Types.ObjectId} id the id to compare against
  * @returns {Promise<Boolean>} true if the instructor does have a student that has a parent with the id given
  */
-InstructorSchema.methods.isInstructorOfChildWithParentIdOf = function(id) {
+InstructorSchema.methods.isInstructorOfChildWithParentIdOf = function(id: string): Promise<boolean> {
 	return new Promise((resolve, reject) => {
 		Parent.findById(id)
 			.then((parent) => {
@@ -48,7 +49,7 @@ InstructorSchema.methods.isInstructorOfChildWithParentIdOf = function(id) {
 				}
 				return resolve(false);
 			})
-			.catch((err) => reject(err));
+			.catch((err: Error) => reject(err));
 	});
 };
 
@@ -56,20 +57,18 @@ InstructorSchema.methods.isInstructorOfChildWithParentIdOf = function(id) {
  * Gets all the instructors that work in the same school as the instructor given in the `this` context
  * @returns {Promise<Array<Document>>} the co workers or also explained as the instructors who share a school with the instructor given in the `this` context
  */
-InstructorSchema.statics.findCoworkersByInstructor = function(instructor) {
+InstructorSchema.methods.findCoworkersByInstructor = function(): Promise<Array<IInstructor>> {
 	return new Promise((resolve, reject) => {
-		const coworkers = [];
+		const coworkers: Array<IInstructor> = [];
 		this.find({ school: this.school })
-			.then((coworkerDocs) => {
-				coworkerDocs.forEach((coworkerDoc) => {
-					if (coworkerDoc._id !== instructor._id) coworkers.push(coworkerDoc);
+			.then((coworkerDocs: Array<IInstructor>) => {
+				coworkerDocs.forEach((coworkerDoc: IInstructor) => {
+					if (coworkerDoc._id !== this._id) coworkers.push(coworkerDoc);
 				});
 			})
-			.catch((err) => reject(err));
+			.catch((err: Error) => reject(err));
 		return resolve(coworkers);
 	});
 };
 
-const instructorModel = User.discriminator('Instructor', InstructorSchema);
-
-module.exports = instructorModel;
+export default User.discriminator<IInstructor>('Instructor', InstructorSchema);
