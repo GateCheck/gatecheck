@@ -1,19 +1,7 @@
 const mongoose = require('mongoose');
 const validator = require('validator').default;
-const { Student, Parent, Instructor } = require('../../models/index');
-
-const userExistsInSchema = async (schema, email, username, idNumber) => {
-	return schema.exists({
-		$or: [ { 'contact.email': email }, { username: username }, { id_number: idNumber } ]
-	});
-};
-
-const userExists = async (email, username, idNumber) => {
-	const existsAsStudent = await userExistsInSchema(Student, email, username, idNumber);
-	const existsAsInstructor = await userExistsInSchema(Instructor, email, username, idNumber);
-	const existsAsParent = await userExistsInSchema(Parent, email, username, idNumber);
-	return existsAsInstructor || existsAsParent || existsAsStudent;
-};
+const jwt = require('jsonwebtoken');
+const { Student, Parent, Instructor, User } = require('../../models/index');
 
 /**
  * Return null if no IDs or map all IDs into documents.
@@ -57,10 +45,9 @@ const buildModelSignup = (payload, type, instructorIDs, parentIDs, studentIDs, p
 
 const createUser = async (type, data) => {
 	const {
-		email,
+		loginUsername,
 		phone,
 		password,
-		username,
 		fullName,
 		idNumber,
 		instructorIDs,
@@ -73,11 +60,13 @@ const createUser = async (type, data) => {
 	} = data;
 	if (password.length < 8) {
 		return 'Choose a stronger password!';
-	} else if (!validator.isEmail(email)) {
+	} else if (!validator.isEmail(loginUsername)) {
 		return 'Not a valid email!';
 	}
 
-	if (await userExists(email, username, idNumber)) {
+	const userExists = await User.exists({ loginUsername });
+
+	if (userExists) {
 		return `User already exists!`;
 	}
 
@@ -86,13 +75,13 @@ const createUser = async (type, data) => {
 	const payload = {
 		_id,
 		contact: {
-			email,
+			email: loginUsername,
 			phone
 		},
-		username,
+		loginUsername,
 		password,
 		full_name: fullName,
-		id_number: idNumber || -1,
+		id_number: idNumber,
 		profile_picture: profilePicture
 	};
 
@@ -101,30 +90,56 @@ const createUser = async (type, data) => {
 
 exports.signup = async (req, res) => {
 	const signupAs = req.params.signupAs.toLowerCase();
+	let user;
 
-	createUser(signupAs, req.body)
-		.then((user) => {
-			typeof user === typeof ''
-				? res.status(400).json({
-						// show the reason the user was not created
-						success: false,
-						message: user
-					})
-				: user.save().then((userDoc) => {
-						// user was created successfully! show user data
-						const data = userDoc.toJSON();
-						delete data.password;
-						res.status(201).json({
-							success: true,
-							[userDoc.collection.name.slice(0, userDoc.collection.name.length - 1) + 'Created']: data
-						});
-					});
+	try {
+		user = await createUser(signupAs, req.body);
+	} catch (err) {
+		console.error(err);
+		return res.status(400).json({
+			success: false,
+			error: err.message
+		});
+	}
+
+	if (typeof user === typeof '') {
+		return res.status(400).json({
+			// show the reason the user was not created
+			success: false,
+			message: user
+		});
+	}
+	console.log(user.toJSON());
+	user
+		.save()
+		.then((userDoc) => {
+			// user was created successfully! show user data
+			const token = jwt.sign(
+				{
+					email: user.contact.email,
+					fullName: user.full_name,
+					school: user.school,
+					profilePicture: user.profile_picture,
+					userId: user._id
+				},
+				process.env.JWT_KEY,
+				{
+					expiresIn: '5h'
+				}
+			);
+			const data = userDoc.toJSON();
+			delete data.password;
+			res.status(201).json({
+				success: true,
+				token,
+				[userDoc.collection.name.slice(0, userDoc.collection.name.length - 1) + 'Created']: data
+			});
 		})
 		.catch((err) => {
 			console.error(err);
-			res.status(400).json({
+			res.status(401).json({
 				success: false,
-				error: err.message
+				message: 'Unauthorized'
 			});
 		});
 };
