@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 import validator from 'validator';
 import { sign } from 'jsonwebtoken';
 import { Student, User } from '../../models';
-import { IUser, IStudent } from '../../..';
+import { IUser, IStudent, RegisterUserPayload } from '../../..';
 import { Request, Response } from 'express';
 
 
