@@ -52,7 +52,7 @@ export const get_all_instructors = async (
 
 	res.status(200).json({
 		success: true,
-		message: 'Instructors relating to user: ' + req.userData.fullName,
+		message: 'Instructors relating to user: ' + req.userData.email,
 		instructors: instructors.map((instructor) =>
 			removeConfidentialData(
 				instructor,
