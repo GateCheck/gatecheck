@@ -1,63 +1,19 @@
 const mongoose = require('mongoose');
 const validator = require('validator').default;
 const jwt = require('jsonwebtoken');
-const { Student, Parent, Instructor, User } = require('../../models/index');
+const { Student, User } = require('../../models');
 
-/**
- * Return null if no IDs or map all IDs into documents.
- * @param {String[]} ids the ids to map
- * @param {Model} model mongoose model for querying by id
- */
-const nullOrMapDocumentReferences = (ids, model) => {
-	if (ids === undefined || ids === null) return null;
-	return ids.map((id) => model.findById(id));
-};
-
-/**
- * build the user model for signup
- * @param {Map} payload 
- * @param {String} type 
- * @param {String[]} instructorIDs 
- * @param {String[]} parentIDs 
- * @param {String[]} studentIDs 
- * @param {String[]} partnerIDs 
- * @param {String[]} childrenIDs 
- * @param {String} school 
- */
-const buildModelSignup = (payload, type, instructorIDs, parentIDs, studentIDs, partnerIDs, childrenIDs, school) => {
-	if (type === 'student') {
-		payload.instructors = nullOrMapDocumentReferences(instructorIDs, Instructor);
-		payload.parents = nullOrMapDocumentReferences(parentIDs, Instructor);
-		payload.school = school;
-		return new Student(payload);
-	} else if (type === 'parent') {
-		payload.children = nullOrMapDocumentReferences(childrenIDs, Instructor);
-		payload.partners = nullOrMapDocumentReferences(partnerIDs, Instructor);
-		return new Parent(payload);
-	} else if (type === 'instructor') {
-		payload.students = nullOrMapDocumentReferences(studentIDs, Instructor);
-		payload.school = school;
-		return new Instructor(payload);
-	}
-
-	throw new Error('Invalid user type: ' + type);
-};
-
-const createUser = async (type, data) => {
-	const {
-		loginUsername,
-		phone,
-		password,
-		fullName,
-		idNumber,
-		instructorIDs,
-		parentIDs,
-		partnerIDs,
-		studentIDs,
-		childrenIDs,
-		profilePicture,
-		school
-	} = data;
+const createUser = async ({
+	loginUsername,
+	phone,
+	password,
+	fullName,
+	idNumber,
+	instructorIDs,
+	parentsIDs,
+	profilePicture,
+	school
+}) => {
 	if (password.length < 8) {
 		return 'Choose a stronger password!';
 	} else if (!validator.isEmail(loginUsername)) {
@@ -71,29 +27,35 @@ const createUser = async (type, data) => {
 	}
 
 	const _id = new mongoose.Types.ObjectId();
-	const _type = type.toLowerCase();
 	const payload = {
 		_id,
 		contact: {
 			email: loginUsername,
-			phone
+			phone: phone || -1
 		},
 		loginUsername,
 		password,
-		full_name: fullName,
-		id_number: idNumber,
-		profile_picture: profilePicture
+		full_name: fullName || null,
+		id_number: idNumber || null,
+		profile_picture: profilePicture || null,
+		administrative_level: 1,
+		school: school || null,
+		instructors:
+			instructorIDs !== null && instructorIDs !== undefined
+				? instructorIDs.map(async (id) => await User.findById(id))
+				: null,
+		parents:
+			parentsIDs !== null && parentsIDs !== undefined
+				? parentsIDs.map(async (id) => await User.findById(id))
+				: null
 	};
-
-	return buildModelSignup(payload, _type, instructorIDs, parentIDs, studentIDs, partnerIDs, childrenIDs, school);
+	return new Student(payload);
 };
 
 exports.signup = async (req, res) => {
-	const signupAs = req.params.signupAs.toLowerCase();
 	let user;
-
 	try {
-		user = await createUser(signupAs, req.body);
+		user = await createUser(req.body);
 	} catch (err) {
 		console.error(err);
 		return res.status(400).json({
@@ -109,7 +71,7 @@ exports.signup = async (req, res) => {
 			message: user
 		});
 	}
-	console.log(user.toJSON());
+
 	user
 		.save()
 		.then((userDoc) => {

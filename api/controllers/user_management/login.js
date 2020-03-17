@@ -36,7 +36,7 @@ const authenticateAndGetToken = (user, password) => {
 exports.login = async (req, res) => {
 	const { loginUsername, password } = req.body;
 
-	const user = await User.findOne({ 'loginUsername': loginUsername });
+	const user = await User.findOne({ loginUsername: loginUsername });
 
 	const token = await authenticateAndGetToken(user, password);
 
@@ -65,6 +65,83 @@ exports.delete_user = async (req, res) => {
 			success: true,
 			message: `User of type: ${user.kind} has been deleted!`,
 			deletedUser: doc.toJSON()
+		});
+	});
+};
+
+exports.change_user_kind = async (req, res) => {
+	if (req.user.administrative_level < 1)
+		res.status(401).json({
+			success: false,
+			message: 'Unauthorized'
+		});
+	const user = await User.findById(req.params.userId);
+	if (user.kind.toLowerCase() === req.body.toType.toLowerCase())
+		return res.status(400).json({
+			success: false,
+			message: 'User is already of type: ' + user.kind
+		});
+
+	user.update({ $unset: { students: null }, parents: null, instructors: null });
+	const { toType: toKind, instructorIDs, parentsIDs, childrenIDs, partnerIDs, studentIDs, school } = req.body;
+	let kindAfter; // used to make the type capitalized accurately so search will work.
+	switch (toKind.toLowerCase()) {
+		case 'student':
+			kindAfter = 'Student';
+			user.students = undefined;
+			user.children = undefined;
+			user.partners = undefined;
+			(user.school = school),
+				(user.instructors =
+					instructorIDs !== null && instructorIDs !== undefined
+						? instructorIDs.map(async (id) => await User.findById(id))
+						: null);
+			user.parents =
+				parentsIDs !== null && parentsIDs !== undefined
+					? parentsIDs.map(async (id) => await User.findById(id))
+					: null;
+			break;
+		case 'parent':
+			kindAfter = 'Parent';
+			user.parents = undefined;
+			user.instructors = undefined;
+			user.students = undefined;
+			user.school = undefined;
+			user.children =
+				childrenIDs !== null && childrenIDs !== undefined
+					? childrenIDs.map(async (id) => await User.findById(id))
+					: null;
+			user.partners =
+				partnerIDs !== null && partnerIDs !== undefined
+					? partnerIDs.map(async (id) => await User.findById(id))
+					: null;
+			break;
+		case 'instructor':
+			kindAfter = 'Instructor';
+			user.parents = undefined;
+			user.children = undefined;
+			user.instructors = undefined;
+			user.partners = undefined;
+			user.school = school;
+			user.students =
+				studentIDs !== null && studentIDs !== undefined
+					? studentIDs.map(async (id) => await User.findById(id))
+					: null;
+			break;
+		default:
+			return res.status(400).json({
+				success: false,
+				message: 'Invalid toKind'
+			});
+	}
+	user.save().then((doc) => {
+		doc.collection.updateOne({ _id: user._id }, { $set: { kind: kindAfter } }).then((re) => {
+			User.findById(doc._id).then((doc2) => {
+				return res.status(200).json({
+					success: true,
+					changedUser: removeConfidentialData(doc2, true)
+				});
+			});
 		});
 	});
 };
