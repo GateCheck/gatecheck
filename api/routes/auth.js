@@ -1,6 +1,5 @@
 const express = require('express');
 const router = express.Router();
-const { removeConfidentialData } = require('../utils');
 
 const getAuthenticatedUser = require('../middleware/get-authenticated-user'); // Must be an admin to delete an account or the user being deleted. ensures so.
 
