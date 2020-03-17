@@ -72,7 +72,7 @@ const createUser = async (type, data) => {
 		school
 	} = data;
 	if (password.length < 8) {
-		return 'Choose a longer password!';
+		return 'Choose a stronger password!';
 	} else if (!validator.isEmail(email)) {
 		return 'Not a valid email!';
 	}

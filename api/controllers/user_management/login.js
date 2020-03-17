@@ -9,34 +9,27 @@ const { Student, Instructor, Parent } = require('../../models/index');
  */
 const authenticateAndGetToken = (user, password) => {
 	return new Promise((resolve, reject) => {
-		new Promise((resolve_, reject_) => {
-			user.comparePassword(password, (err, success) => {
-				if (err) {
-					return resolve_(false);
-				}
-				resolve_(success);
-			});
-		})
-			.then((success) => {
-				if (success) {
-					const token = jwt.sign(
-						{
-							email: user.contact.email,
-							fullName: user.full_name,
-							school: user.school,
-							profilePicture: user.profile_picture,
-							userId: user._id
-						},
-						process.env.JWT_KEY,
-						{
-							expiresIn: '5h'
-						}
-					);
-					return resolve(token);
-				}
-				return resolve(null);
-			})
-			.catch((err) => resolve(null));
+		user.comparePassword(password, (err, success) => {
+			err
+				? resolve(null)
+				: success
+					? resolve(
+							jwt.sign(
+								{
+									email: user.contact.email,
+									fullName: user.full_name,
+									school: user.school,
+									profilePicture: user.profile_picture,
+									userId: user._id
+								},
+								process.env.JWT_KEY,
+								{
+									expiresIn: '5h'
+								}
+							)
+						)
+					: resolve(null);
+		});
 	});
 };
 
@@ -81,11 +74,11 @@ const findUserAndLoginWithSchema = async (model, email, username, id, password, 
 exports.login = async (req, res) => {
 	const { username, email, password, id } = req.body;
 
-	let success = await findUserAndLoginWithSchema(Student, email, username, id, password, res);
-	if (success) return;
-	success = await findUserAndLoginWithSchema(Parent, email, username, id, password, res);
-	if (success) return;
-	success = await findUserAndLoginWithSchema(Instructor, email, username, id, password, res);
+	for (const model of [ Student, Parent, Instructor ]) {
+		let success = await findUserAndLoginWithSchema(model, email, username, id, password, res);
+		if (success) return;
+	}
+	
 	if (!success) {
 		res.status(401).json({
 			success: false,
