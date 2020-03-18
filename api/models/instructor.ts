@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import User from './user';
 import Parent from './parent';
-import { IInstructor } from '../..';
+import { IInstructor, IUser } from '../..';
 
 const InstructorSchema = new mongoose.Schema(
 	{
@@ -21,7 +21,7 @@ const InstructorSchema = new mongoose.Schema(
  * @param {String | mongoose.Types.ObjectId} id the id to compare against
  * @returns {Promise<Boolean>} true if the instructor is an instructor of the student of the given id
  */
-InstructorSchema.methods.isInstructorOfStudentWithIdOf = function(id: string): Promise<boolean> {
+InstructorSchema.methods.isInstructorOfStudentWithIdOf = function(this: IInstructor, id: string): Promise<boolean> {
 	return new Promise((resolve, reject) => {
 		if (this.students === null || this.students.length < 1) return resolve(false);
 		for (const student of this.students) {
@@ -36,7 +36,7 @@ InstructorSchema.methods.isInstructorOfStudentWithIdOf = function(id: string): P
  * @param {String | mongoose.Types.ObjectId} id the id to compare against
  * @returns {Promise<Boolean>} true if the instructor does have a student that has a parent with the id given
  */
-InstructorSchema.methods.isInstructorOfChildWithParentIdOf = function(id: string): Promise<boolean> {
+InstructorSchema.methods.isInstructorOfChildWithParentIdOf = function(this: IInstructor, id: string): Promise<boolean> {
 	return new Promise((resolve, reject) => {
 		Parent.findById(id)
 			.then((parent) => {
@@ -57,13 +57,13 @@ InstructorSchema.methods.isInstructorOfChildWithParentIdOf = function(id: string
  * Gets all the instructors that work in the same school as the instructor given in the `this` context
  * @returns {Promise<Array<Document>>} the co workers or also explained as the instructors who share a school with the instructor given in the `this` context
  */
-InstructorSchema.methods.findCoworkersByInstructor = function(): Promise<Array<IInstructor>> {
+InstructorSchema.methods.findCoworkersByInstructor = function(this: IInstructor): Promise<Array<IInstructor>> {
 	return new Promise((resolve, reject) => {
 		const coworkers: Array<IInstructor> = [];
-		this.find({ school: this.school })
-			.then((coworkerDocs: Array<IInstructor>) => {
-				coworkerDocs.forEach((coworkerDoc: IInstructor) => {
-					if (coworkerDoc._id !== this._id) coworkers.push(coworkerDoc);
+		this.model('Instructor').find({ school: this.school })
+			.then((coworkerDocs: Array<mongoose.Document>) => {
+				coworkerDocs.forEach((coworkerDoc: mongoose.Document) => {
+					if (coworkerDoc._id !== this._id) coworkers.push(coworkerDoc as IInstructor);
 				});
 			})
 			.catch((err: Error) => reject(err));

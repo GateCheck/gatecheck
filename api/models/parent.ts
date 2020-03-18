@@ -25,7 +25,7 @@ const ParentSchema = new Schema(
  * @param {String | mongoose.Types.ObjectId} id the id to compare against
  * @returns {Promise<Boolean>} true if the parent given in the `this` context has a child with the id given
  */
-ParentSchema.methods.hasChildWithIdOf = function(id: string): Promise<boolean> {
+ParentSchema.methods.hasChildWithIdOf = function(this: IParent, id: string): Promise<boolean> {
 	return new Promise((resolve, reject) => {
 		if (this.children === null) return resolve(false);
 		for (const child of this.children) {
@@ -40,7 +40,7 @@ ParentSchema.methods.hasChildWithIdOf = function(id: string): Promise<boolean> {
  * @param {String | mongoose.Types.ObjectId} id the id to compare against
  * @returns {Promise<Boolean>} true if the parent given in the `this` context has a child who has an instructor with the given id
  */
-ParentSchema.methods.hasChildWithInstructorOfId = function(id: string): Promise<boolean> {
+ParentSchema.methods.hasChildWithInstructorOfId = function(this: IParent, id: string): Promise<boolean> {
 	return new Promise((resolve, reject) => {
 		if (this.children === null) return resolve(false);
 		for (const child of this.children) {
@@ -57,7 +57,7 @@ ParentSchema.methods.hasChildWithInstructorOfId = function(id: string): Promise<
  * Gets the instructors of the children of the parent given.
  * @returns {Promise<Array<IInstructor>>} returns the instructors of the children of a parent.
  */
-ParentSchema.methods.getChildrenInstructors = function(): Promise<Array<IInstructor>> {
+ParentSchema.methods.getChildrenInstructors = function(this: IParent): Promise<Array<IInstructor>> {
 	return new Promise((resolve, reject) => {
 		if (this.children === null || this.children.length < 1) return resolve([]);
 		const instructors = [];

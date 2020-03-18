@@ -26,7 +26,7 @@ const StudentSchema: Schema = new Schema(
  * @param {String} id the id to compare against
  * @returns {Promise<Boolean>} true if the student given in the `this` context has a parent with the id given.
  */
-StudentSchema.methods.hasParentWithIdOf = function(id: string): Promise<boolean> {
+StudentSchema.methods.hasParentWithIdOf = function(this: IStudent, id: string): Promise<boolean> {
 	return new Promise((resolve, reject) => {
 		if (this.parents === null || this.parents.length < 1) return resolve(false);
 		for (const parent of this.parents) {
@@ -41,7 +41,7 @@ StudentSchema.methods.hasParentWithIdOf = function(id: string): Promise<boolean>
  * @param {String} id the id to compare against
  * @returns {Promise<Boolean>} true if the student given in the `this` context has an instructor with the id given.
  */
-StudentSchema.methods.hasInstructorWithIdOf = function(id: string): Promise<boolean> {
+StudentSchema.methods.hasInstructorWithIdOf = function(this: IStudent, id: string): Promise<boolean> {
 	return new Promise((resolve, reject) => {
 		if (this.instructors === null || this.instructors.length < 1) return resolve(false);
 		for (const instructor of this.instructors) {
