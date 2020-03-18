@@ -80,7 +80,7 @@ export interface RegisterUserPayload<T extends IStudent> {
 	school: T['school']
 }
 
-declare enum AdministrativeLevel {
+export const enum AdministrativeLevel {
     One = 1,
     Two = 2,
     Three = 3

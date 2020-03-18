@@ -8,5 +8,6 @@ import getAuthenticatedUser from '../middleware/get-authenticated-user'; // Ensu
 router.get('/parents', getAuthenticatedUser as any, ParentsController.get_all_parents as any);
 
 router.get('/parent/:parentId', getAuthenticatedUser as any, ParentsController.get_parent as any);
+router.get('/parent', getAuthenticatedUser as any, ParentsController.get_parent as any);
 
 export default router;

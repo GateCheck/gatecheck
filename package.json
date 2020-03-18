@@ -2,7 +2,7 @@
   "name": "gatecheck-backend",
   "version": "1.0.0",
   "description": "",
-  "main": "dbschema.js",
+  "main": "server.ts",
   "scripts": {
     "start": "nodemon server.js"
   },

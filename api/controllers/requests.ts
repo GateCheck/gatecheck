@@ -1,4 +1,4 @@
-import { AuthenticatedRequest, IInstructor, IParent, IStudent } from '../..';
+import { AuthenticatedRequest, IInstructor, IParent, IStudent, AdministrativeLevel } from '../..';
 import { Response } from 'express';
 
 import moment from 'moment';
@@ -18,7 +18,7 @@ export const get_request = async (req: AuthenticatedRequest<IInstructor & IParen
 			// find if access should be allowed to the user. if the user is an instructor check if he is an instructor of the student who made the request if not set to false
 			// otherwise if user is the maker of the request set true
 			let accessAllowed =
-				req.user.administrative_level > 2 ||
+				req.user.administrative_level > AdministrativeLevel.Two ||
 				(req.user.kind === 'Instructor'
 					? await req.user.isInstructorOfStudentWithIdOf(request.issuer._id)
 					: request.issuer._id == req.userData.userId);
@@ -91,7 +91,7 @@ export const delete_request = async (req: AuthenticatedRequest<IInstructor & IPa
 		});
 	}
 
-	if (req.user.administrative_level > 2 || request.issuer._id === req.user._id) {
+	if (req.user.administrative_level > AdministrativeLevel.Two || request.issuer._id === req.user._id) {
 		Request.deleteOne({
 			_id: request._id
 		}).then(() => {
@@ -112,7 +112,7 @@ export const delete_request = async (req: AuthenticatedRequest<IInstructor & IPa
 export const get_all_requests = async (req: AuthenticatedRequest<IInstructor & IParent & IStudent>, res: Response) => {
 	const query = Request.find();
 
-	if (req.user.administrative_level > 2)
+	if (req.user.administrative_level > AdministrativeLevel.Two)
 		query.then((requestDocs) => {
 			res.status(200).json({
 				success: true,

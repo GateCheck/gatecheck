@@ -17,13 +17,13 @@ const createUser = async ({
 	profilePicture,
 	school
 }: RegisterUserPayload<IStudent>): Promise<IStudent | string> => {
-	if (password.length < 8) {
+	if (password == null || password.length < 8) {
 		return 'Choose a stronger password!';
-	} else if (!validator.isEmail(loginUsername)) {
+	} else if (loginUsername == null || !validator.isEmail(loginUsername)) {
 		return 'Not a valid email!';
 	}
 
-	const userExists = await User.exists({ loginUsername });
+	const userExists = await User.exists({ $or: [{ loginUsername }] });
 
 	if (userExists) {
 		return `User already exists!`;

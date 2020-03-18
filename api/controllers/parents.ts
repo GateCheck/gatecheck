@@ -1,11 +1,11 @@
-import { AuthenticatedRequest, IInstructor, IParent, IStudent } from '../..';
+import { AuthenticatedRequest, IInstructor, IParent, IStudent, UserKind, AdministrativeLevel } from '../..';
 
 import { Parent } from '../models';
 import { removeConfidentialData } from '../utils';
 import { Response } from 'express';
 
 export const get_parent = async (req: AuthenticatedRequest<IInstructor & IParent & IStudent>, res: Response) => {
-	const parent = await Parent.findById(req.params.parentId);
+	const parent = req.params.parentId === undefined && req.user.kind == UserKind.Parent ? req.user : await Parent.findById(req.params.parentId);
 	if (parent === null)
 		return res.status(401).json({
 			success: false,
@@ -13,7 +13,7 @@ export const get_parent = async (req: AuthenticatedRequest<IInstructor & IParent
 		});
 	const isInstructorRequesting = await parent.hasChildWithInstructorOfId(req.userData.userId);
 	const allowAccess =
-		req.user.administrative_level > 2 || // admin requesting
+		req.user.administrative_level > AdministrativeLevel.Two || // admin requesting
 		req.userData.userId == req.params.parentId || // same user requesting
 		(await parent.hasChildWithIdOf(req.userData.userId)) || // child of parent requesting
 		isInstructorRequesting; // instructor of a child of the parent requesting
@@ -27,14 +27,14 @@ export const get_parent = async (req: AuthenticatedRequest<IInstructor & IParent
 		message: "Obtained parent's data",
 		parent: removeConfidentialData(
 			parent,
-			req.user.administrative_level > 2 || req.userData.userId == req.params.parentId || isInstructorRequesting
+			req.user.administrative_level > AdministrativeLevel.Two || req.userData.userId == req.params.parentId || isInstructorRequesting
 		)
 	});
 };
 
 export const get_all_parents = async (req: AuthenticatedRequest<IInstructor & IParent & IStudent>, res: Response) => {
 	let parents: Array<IParent> = [];
-	if (req.user.administrative_level > 2) {
+	if (req.user.administrative_level > AdministrativeLevel.Two) {
 		Parent.find().then((parentDocs) => {
 			if (parentDocs !== null && parentDocs.length !== 0) parents = parentDocs;
 		});
@@ -54,7 +54,7 @@ export const get_all_parents = async (req: AuthenticatedRequest<IInstructor & IP
 		parents: parents.map((parent) =>
 			removeConfidentialData(
 				parent,
-				req.user.administrative_level > 2 || req.userData.userId == req.params.parentId
+				req.user.administrative_level > AdministrativeLevel.Two || req.userData.userId == req.params.parentId
 			)
 		)
 	});

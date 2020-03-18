@@ -1,7 +1,7 @@
 import { sign } from 'jsonwebtoken';
 import { removeConfidentialData } from '../../utils';
 import { User } from '../../models';
-import { IUser, AuthenticatedRequest } from '../../..';
+import { IUser, AuthenticatedRequest, AdministrativeLevel } from '../../..';
 import { Request, Response } from 'express';
 
 /**
@@ -58,7 +58,7 @@ export const login = async (req: Request, res: Response) => {
 };
 
 export const delete_user = async (req: AuthenticatedRequest<IUser>, res: Response) => {
-	let allowAccess = req.user.administrative_level > 2 || req.user._id == req.params.userId;
+	let allowAccess = req.user.administrative_level > AdministrativeLevel.Two || req.user._id == req.params.userId;
 	if (!allowAccess)
 		return res.status(401).json({
 			success: false,
@@ -81,7 +81,7 @@ export const delete_user = async (req: AuthenticatedRequest<IUser>, res: Respons
 };
 
 export const change_user_kind = async (req: AuthenticatedRequest<IUser>, res: Response) => {
-	if (req.user.administrative_level < 1)
+	if (req.user.administrative_level < AdministrativeLevel.One)
 		res.status(401).json({
 			success: false,
 			message: 'Unauthorized'
