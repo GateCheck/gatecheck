@@ -5,7 +5,7 @@ import cookieParser from 'cookie-parser';
 import express from 'express';
 import cors from 'cors';
 
-import { authRoutes, instructorRoutes, parentRoutes, requestRoutes, studentRoutes, settingsRoute } from './api/routes';
+import { studentRoute, studentsRoute, parentRoute, parentsRoute, instructorRoute, instructorsRoute, userRoute, settingsRoute, requestRoute, requestsRoute } from './api/routes';
 
 const app = express();
 
@@ -21,11 +21,15 @@ app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(cors());
 
-app.use('/api', instructorRoutes);
-app.use('/api', parentRoutes);
-app.use('/api', requestRoutes);
-app.use('/api', studentRoutes);
-app.use('/api', authRoutes);
-app.use('/api/settings', settingsRoute)
+app.use('/api/student', studentRoute);
+app.use('/api/students', studentsRoute);
+app.use('/api/parent', parentRoute);
+app.use('/api/parents', parentsRoute);
+app.use('/api/instructor', instructorRoute);
+app.use('/api/instructors', instructorsRoute);
+app.use('/api/user', userRoute);
+app.use('/api/user/settings', settingsRoute);
+app.use('/api/request', requestRoute);
+app.use('/api/requests', requestsRoute);
 
 export default app;
