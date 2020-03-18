@@ -1,12 +1,15 @@
-import { AuthenticatedRequest, IInstructor, IParent, IStudent, UserKind, AdministrativeLevel } from '../..';
+import { AuthenticatedRequest, IInstructor, IParent, IStudent, UserKind, AdministrativeLevel, IUser } from '../..';
 import { Response } from 'express';
 
-import { Instructor } from '../models';
+import { Instructor, Student } from '../models';
 import { removeConfidentialData } from '../utils';
 import user from '../models/user';
 
 export const get_instructor = async (req: AuthenticatedRequest<IInstructor & IParent & IStudent>, res: Response) => {
-	const instructor = req.params.instructorId === undefined && req.user.kind == UserKind.Instructor ? req.user : await Instructor.findById(req.params.instructorId);
+	const instructor =
+		req.params.instructorId === undefined && req.user.kind == UserKind.Instructor
+			? req.user
+			: await Instructor.findById(req.params.instructorId);
 	if (instructor === null)
 		return res.status(401).json({
 			success: false,
@@ -63,7 +66,51 @@ export const get_all_instructors = async (
 	});
 };
 
+export const add_students = async (req: AuthenticatedRequest<IUser>, res: Response) => {
+	const instructor = await Instructor.findById(req.params.instructorId);
+
+	const allowAccess = req.user.administrative_level > AdministrativeLevel.One;
+
+	if (!allowAccess) {
+		return res.status(401).json({
+			success: false,
+			message: 'Unauthorized'
+		});
+	} else if (instructor == null) {
+		return res.status(400).json({
+			success: true,
+			message: 'Invalid instructor ID'
+		});
+	}
+
+	const studentToAddIds = [ ...req.query.student ];
+	if (studentToAddIds.length < 1) {
+		return res.status(200).json({
+			success: false,
+			message: 'You must pass student IDs and they must be valid!'
+		});
+	}
+	for (const studentId of studentToAddIds) {
+		const student = await Student.findById(studentId);
+		if (student != null) {
+			instructor.students.push(student);
+			student.instructors.push(instructor);
+			await student.save();
+		}
+	}
+
+	instructor.save().then((doc) => {
+		res.status(200).json({
+			success: true,
+			message: 'Successfully added children!',
+			childrenAdded: doc.students,
+			parent: removeConfidentialData(doc, true)
+		});
+	});
+};
+
 export default {
 	get_instructor,
-	get_all_instructors
+	get_all_instructors,
+	add_students
 };

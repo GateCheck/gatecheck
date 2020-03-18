@@ -8,4 +8,6 @@ import getAuthenticatedUser from '../middleware/get-authenticated-user'; // Ensu
 router.get('/:instructorId', getAuthenticatedUser as any, InstructorsController.get_instructor as any);
 router.get('/', getAuthenticatedUser as any, InstructorsController.get_instructor as any);
 
+router.patch('/:instructorId/students', getAuthenticatedUser as any, InstructorsController.get_instructor as any);
+
 export default router;

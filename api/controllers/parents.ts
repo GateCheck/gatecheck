@@ -61,13 +61,16 @@ export const add_children = async (req: AuthenticatedRequest<IUser>, res: Respon
 			message: 'You must pass student IDs and they must be valid!'
 		});
 	}
-	const children: Array<IStudent> = [];
+
 	for (const childId of childrenToAddIds) {
 		const child = await Student.findById(childId);
-		if (child != null) children.push(child);
+		if (child != null) {
+			parent.children.push(child);
+			child.parents.push(parent);
+			await child.save();
+		}
 	}
 
-	parent.children.push(...children);
 	parent.save().then((doc) => {
 		res.status(200).json({
 			success: true,
@@ -102,13 +105,16 @@ export const add_partners = async (req: AuthenticatedRequest<IUser>, res: Respon
 			message: 'You must pass student IDs and they must be valid!'
 		});
 	}
-	const partners: Array<IParent> = [];
+
 	for (const partnerId of partnerToAddIds) {
 		const partner = await Parent.findById(partnerId);
-		if (partner != null) partners.push(partner);
+		if (partner != null) {
+			parent.partners.push(partner);
+			partner.partners.push(parent);
+			await partner.save();
+		}
 	}
 
-	parent.partners.push(...partners);
 	parent.save().then((doc) => {
 		res.status(200).json({
 			success: true,

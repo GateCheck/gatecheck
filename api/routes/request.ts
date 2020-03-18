@@ -13,6 +13,6 @@ router.delete('/:requestId', getAuthenticatedUser as any, RequestsController.del
 
 router.patch('/:requestId', getAuthenticatedUser as any, RequestsController.edit_request as any);
 
-router.patch('/:requestId/accept', getAuthenticatedUser as any, RequestsController.update_request_status as any);
+router.patch('/:requestId/status', getAuthenticatedUser as any, RequestsController.update_request_status as any);
 
 export default router;
