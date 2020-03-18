@@ -22,7 +22,6 @@ export default async (req: AuthenticatedRequest<IUser>, res: Response) => {
 			message: 'Unauthorized'
 		});
 	} else if (
-		(administrativeLevel != null && req.user.administrative_level < AdministrativeLevel.Two) ||
 		(idNumber != null && req.user.administrative_level < AdministrativeLevel.Two) ||
 		(fullName != null && req.user.administrative_level < AdministrativeLevel.Two)
 	) {
@@ -62,11 +61,19 @@ export default async (req: AuthenticatedRequest<IUser>, res: Response) => {
 	user!.id_number = idNumber || user!.id_number;
 	user!.full_name = fullName || user!.full_name;
 
-	user!.save().then((doc) => {
-		res.status(200).json({
-			success: true,
-			message: 'Updated!',
-			updatedUser: doc
+	user!
+		.save()
+		.then((doc) => {
+			res.status(200).json({
+				success: true,
+				message: 'Updated!',
+				updatedUser: doc
+			});
+		})
+		.catch((err) => {
+			res.status(500).json({
+				success: false,
+				message: err.message
+			});
 		});
-	});
 };

@@ -1,7 +1,7 @@
 import { sign } from 'jsonwebtoken';
 import { removeConfidentialData } from '../../utils';
 import { User } from '../../models';
-import { IUser, AuthenticatedRequest, AdministrativeLevel } from '../../..';
+import { IUser, AuthenticatedRequest, AdministrativeLevel, UserKind } from '../../..';
 import { Request, Response } from 'express';
 
 /**
@@ -101,10 +101,10 @@ export const change_user_kind = async (req: AuthenticatedRequest<IUser>, res: Re
 
 	user.update({ $unset: { students: null }, parents: null, instructors: null });
 	const { toType: toKind, instructorIDs, parentsIDs, childrenIDs, partnerIDs, studentIDs, school } = req.body;
-	let kindAfter: string; // used to make the type capitalized accurately so search will work.
+	let kindAfter: UserKind; // used to make the type capitalized accurately so search will work.
 	switch (toKind.toLowerCase()) {
 		case 'student':
-			kindAfter = 'Student';
+			kindAfter = UserKind.Student;
 			user['students'] = undefined;
 			user['children'] = undefined;
 			user['partners'] = undefined;
@@ -119,7 +119,7 @@ export const change_user_kind = async (req: AuthenticatedRequest<IUser>, res: Re
 					: null;
 			break;
 		case 'parent':
-			kindAfter = 'Parent';
+			kindAfter = UserKind.Parent;
 			user['parents'] = undefined;
 			user['instructors'] = undefined;
 			user['students'] = undefined;
@@ -134,7 +134,7 @@ export const change_user_kind = async (req: AuthenticatedRequest<IUser>, res: Re
 					: null;
 			break;
 		case 'instructor':
-			kindAfter = 'Instructor';
+			kindAfter = UserKind.Instructor;
 			user['parents'] = undefined;
 			user['children'] = undefined;
 			user['instructors'] = undefined;
