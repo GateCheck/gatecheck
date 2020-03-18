@@ -3,7 +3,12 @@ import { Request } from '../..';
 
 const requestSchema = new Schema({
 	_id: Schema.Types.ObjectId,
-	accepted: Boolean,
+	status: {
+		type: String,
+		default: 'Created',
+		required: true,
+		enum: [ 'Created', 'Denied', 'Accepted' ]
+	},
 	acceptedDate: Date,
 	details: String,
 	issuedDate: Date,

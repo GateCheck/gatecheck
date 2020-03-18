@@ -1,9 +1,17 @@
-import { AuthenticatedRequest, IInstructor, IParent, IStudent, AdministrativeLevel } from '../..';
+import {
+	AuthenticatedRequest,
+	IInstructor,
+	IParent,
+	IStudent,
+	AdministrativeLevel,
+	UserKind,
+	RequestStatus
+} from '../..';
 import { Response } from 'express';
 
 import moment from 'moment';
 import { Types } from 'mongoose';
-import { Request } from '../models';
+import { Request, User } from '../models';
 
 export const get_request = async (req: AuthenticatedRequest<IInstructor & IParent & IStudent>, res: Response) => {
 	Request.findById(req.params.requestId)
@@ -46,12 +54,95 @@ export const get_request = async (req: AuthenticatedRequest<IInstructor & IParen
 		});
 };
 
+export const edit_request = async (req: AuthenticatedRequest<IStudent>, res: Response) => {
+	const request = await Request.findById(req.params.requestId);
+	if (request == null) {
+		return res.status(400).json({
+			success: false,
+			message: "Can't find request"
+		});
+	}
+	const { details, reason, title, goLocation } = req.body;
+
+	const allowAccess = req.user.administrative_level > AdministrativeLevel.Two || req.user._id === request.issuer._id;
+
+	if (!allowAccess) {
+		return res.status(401).json({
+			success: false,
+			message: 'Unauthorized'
+		});
+	} else if (request.status === RequestStatus.Accepted) {
+		return res.status(400).json({
+			success: false,
+			message: 'This request is in an immutable state as it has been accepted.'
+		});
+	}
+
+	request.details = details || request.details;
+	request.reason = reason || request.reason;
+	request.title = title || request.title;
+	request.goLocation = goLocation || request.goLocation;
+
+	request.save().then((doc) => {
+		res.status(200).json({
+			success: true,
+			request: doc
+		});
+	});
+};
+
+export const update_request_status = async (req: AuthenticatedRequest<IInstructor>, res: Response) => {
+	if (
+		req.body.status == null ||
+		req.body.status.toLowerCase() !== RequestStatus.Accepted.toLowerCase() ||
+		req.body.status.toLowerCase() !== RequestStatus.Denied.toLowerCase()
+	) {
+		return res.status(400).json({
+			success: false,
+			message: 'Invalid request body. Must pass `status` which could be `Accepted` or `Denied`'
+		});
+	}
+	const request = await Request.findById(req.params.requestId);
+	if (request == null) {
+		return res.status(400).json({
+			success: false,
+			message: "Can't find request"
+		});
+	}
+
+	const allowAccess =
+		req.user.administrative_level > AdministrativeLevel.Two ||
+		(req.user.kind == UserKind.Instructor && (await req.user.isInstructorOfStudentWithIdOf(request.issuer._id)));
+
+	if (!allowAccess) {
+		return res.status(401).json({
+			success: false,
+			message: 'Unauthorized'
+		});
+	} else if (request.status === RequestStatus.Accepted) {
+		return res.status(400).json({
+			success: false,
+			message: 'This request is in an immutable state as it has been accepted.'
+		});
+	}
+
+	request.status = req.body.status.toLowerCase() === RequestStatus.Accepted.toLowerCase() ? RequestStatus.Accepted : RequestStatus.Denied;
+	request.acceptedDate = moment().unix();
+
+	request.save().then((doc) => {
+		res.status(200).json({
+			success: true,
+			request: doc
+		});
+	});
+};
+
 export const create_request = async (req: AuthenticatedRequest<IInstructor & IParent & IStudent>, res: Response) => {
 	const { details, reason, title, goLocation } = req.body;
 
 	const request = new Request({
 		_id: new Types.ObjectId(),
-		accepted: false,
+		status: RequestStatus.Created,
 		acceptedDate: null,
 		details,
 		issuedDate: moment().unix(),
@@ -130,4 +221,4 @@ export const get_all_requests = async (req: AuthenticatedRequest<IInstructor & I
 		});
 };
 
-export default { get_all_requests, get_request, delete_request, create_request };
+export default { get_all_requests, get_request, delete_request, create_request, edit_request, update_request_status };
