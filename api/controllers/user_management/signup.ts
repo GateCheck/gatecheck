@@ -3,7 +3,7 @@ import validator from 'validator';
 import { sign } from 'jsonwebtoken';
 import { IUser, IStudent, RegisterUserPayload } from '../../..';
 import { Request, Response } from 'express';
-import { User } from '../../../database/models';
+import { User, Student } from '../../../database/models';
 
 
 const createUser = async ({

@@ -5,7 +5,7 @@
   "main": "server.ts",
   "scripts": {
     "start": "nodemon server.js",
-    "test": "mocha --recursive --exit"
+    "test": "mocha 'tests/**/*.js' --recursive --exit"
   },
   "repository": {
     "type": "git",
@@ -58,5 +58,10 @@
   ],
   "args": [
     "${workspaceFolder}/index.ts"
-  ]
+  ],
+  "jest": {
+    "modulePaths": [
+      "./app.ts"
+    ]
+  }
 }
