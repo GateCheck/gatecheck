@@ -58,7 +58,7 @@ export const login = async (req: Request, res: Response) => {
 };
 
 export const delete_user = async (req: AuthenticatedRequest<IUser>, res: Response) => {
-	let allowAccess = req.user.administrative_level > AdministrativeLevel.Two || req.user._id == req.params.userId;
+	let allowAccess = req.user.administrative_level > AdministrativeLevel.One || req.user._id == req.params.userId;
 	if (!allowAccess)
 		return res.status(401).json({
 			success: false,
@@ -74,14 +74,14 @@ export const delete_user = async (req: AuthenticatedRequest<IUser>, res: Respons
 	user.remove().then((doc) => {
 		res.status(200).json({
 			success: true,
-			message: `User of type: ${user.kind} has been deleted!`,
-			deletedUser: doc.toJSON()
+			message: `User ${user.loginUsername} has been deleted!`,
+			deletedUser: removeConfidentialData(doc.toJSON(), true)
 		});
 	});
 };
 
 export const change_user_kind = async (req: AuthenticatedRequest<IUser>, res: Response) => {
-	if (req.user.administrative_level < AdministrativeLevel.One)
+	if (req.user.administrative_level < AdministrativeLevel.Two)
 		res.status(401).json({
 			success: false,
 			message: 'Unauthorized'
@@ -93,14 +93,14 @@ export const change_user_kind = async (req: AuthenticatedRequest<IUser>, res: Re
 			message: 'Invalid ID'
 		});
 	}
-	if (user.kind.toLowerCase() === req.body.toType.toLowerCase())
+	if (user.kind.toLowerCase() === req.body.toKind.toLowerCase())
 		return res.status(400).json({
 			success: false,
 			message: 'User is already of type: ' + user.kind
 		});
 
 	user.update({ $unset: { students: null }, parents: null, instructors: null });
-	const { toType: toKind, instructorIDs, parentsIDs, childrenIDs, partnerIDs, studentIDs, school } = req.body;
+	const { toKind, instructorIDs, parentsIDs, childrenIDs, partnerIDs, studentIDs, school } = req.body;
 	let kindAfter: UserKind; // used to make the type capitalized accurately so search will work.
 	switch (toKind.toLowerCase()) {
 		case 'student':
