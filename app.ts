@@ -1,4 +1,3 @@
-import { connect } from 'mongoose';
 import morgan from 'morgan';
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
@@ -8,12 +7,6 @@ import cors from 'cors';
 import { studentRoute, studentsRoute, parentRoute, parentsRoute, instructorRoute, instructorsRoute, userRoute, settingsRoute, requestRoute, requestsRoute } from './api/routes';
 
 const app = express();
-
-connect(
-	`mongodb+srv://gatecheck_admin:${process.env
-		.MONGODB_ATLAS_PW}@gatecheck-6ixdc.mongodb.net/test?retryWrites=true&w=majority`,
-	{ useNewUrlParser: true, useUnifiedTopology: true }
-);
 
 app.use(morgan('dev'));
 app.use(bodyParser.urlencoded({ extended: false }));
