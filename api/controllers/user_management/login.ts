@@ -1,8 +1,8 @@
 import { sign } from 'jsonwebtoken';
 import { removeConfidentialData } from '../../utils';
-import { User } from '../../models';
 import { IUser, AuthenticatedRequest, AdministrativeLevel, UserKind } from '../../..';
 import { Request, Response } from 'express';
+import { User } from '../../../database/models';
 
 /**
  * Verify the user entered a correct password if he didnt, return false if he did, return the token

@@ -11,7 +11,7 @@ import { Response } from 'express';
 
 import moment from 'moment';
 import { Types } from 'mongoose';
-import { Request, User } from '../models';
+import { Request } from '../../database/models';
 
 export const get_request = async (req: AuthenticatedRequest<IInstructor & IParent & IStudent>, res: Response) => {
 	Request.findById(req.params.requestId)
@@ -126,7 +126,10 @@ export const update_request_status = async (req: AuthenticatedRequest<IInstructo
 		});
 	}
 
-	request.status = req.body.status.toLowerCase() === RequestStatus.Accepted.toLowerCase() ? RequestStatus.Accepted : RequestStatus.Denied;
+	request.status =
+		req.body.status.toLowerCase() === RequestStatus.Accepted.toLowerCase()
+			? RequestStatus.Accepted
+			: RequestStatus.Denied;
 	request.acceptedDate = moment().unix();
 
 	request.save().then((doc) => {

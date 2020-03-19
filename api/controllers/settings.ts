@@ -1,7 +1,7 @@
 import { AuthenticatedRequest, IUser, AdministrativeLevel } from '../..';
 import { Response } from 'express';
-import { User } from '../models';
 import validator from 'validator';
+import { User } from '../../database/models';
 
 export default async (req: AuthenticatedRequest<IUser>, res: Response) => {
 	let id = req.params.userId;

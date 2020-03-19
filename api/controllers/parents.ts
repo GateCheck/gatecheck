@@ -1,8 +1,8 @@
 import { AuthenticatedRequest, IInstructor, IParent, IStudent, UserKind, AdministrativeLevel, IUser } from '../..';
 
-import { Parent, User, Student } from '../models';
 import { removeConfidentialData } from '../utils';
 import { Response } from 'express';
+import { Parent, Student } from '../../database/models';
 
 export const get_parent = async (req: AuthenticatedRequest<IInstructor & IParent & IStudent>, res: Response) => {
 	const parent =

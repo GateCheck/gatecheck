@@ -1,9 +1,8 @@
 import { AuthenticatedRequest, IInstructor, IParent, IStudent, UserKind, AdministrativeLevel, IUser } from '../..';
 import { Response } from 'express';
 
-import { Instructor, Student } from '../models';
 import { removeConfidentialData } from '../utils';
-import user from '../models/user';
+import { Instructor, Student } from '../../database/models';
 
 export const get_instructor = async (req: AuthenticatedRequest<IInstructor & IParent & IStudent>, res: Response) => {
 	const instructor =

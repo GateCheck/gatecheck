@@ -1,7 +1,7 @@
-import { Student } from '../models';
 import { removeConfidentialData } from '../utils';
 import { AuthenticatedRequest, IStudent, IInstructor, IParent, UserKind, AdministrativeLevel } from '../..';
 import { Response } from 'express';
+import { Student } from '../../database/models';
 
 export const get_student = async (req: AuthenticatedRequest<IInstructor & IParent & IStudent>, res: Response) => {
 	const student = req.params.studentId === undefined && req.user.kind == UserKind.Student ? req.user : await Student.findById(req.params.studentId);

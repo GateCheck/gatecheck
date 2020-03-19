@@ -1,7 +1,7 @@
 import { verify } from 'jsonwebtoken';
-import { User } from '../models';
 import { Response, NextFunction } from 'express';
 import { AuthenticatedRequest, IUser } from '../..';
+import { User } from '../../database/models';
 
 export default (req: AuthenticatedRequest<IUser>, res: Response, next: NextFunction) => {
 	try {
