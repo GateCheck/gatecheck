@@ -2,11 +2,18 @@
   "name": "gatecheck-backend",
   "version": "1.0.0",
   "description": "",
-  "main": "server.ts",
   "type": "module",
+  "main": "dist/server.js",
   "scripts": {
-    "start": "node server.ts",
-    "test": "mocha 'tests/**/*.js' --recursive --exit"
+    "build-ts": "tsc",
+    "postinstall": "npm run build-ts",
+    "start": "npm run serve",
+    "serve": "node dist/server.js",
+    "watch-node": "nodemon dist/server.js",
+    "watch-ts": "tsc -w"
+  },
+  "engines": {
+    "node": "8.11.4"
   },
   "repository": {
     "type": "git",
