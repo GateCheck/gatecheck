@@ -3,13 +3,13 @@
   "version": "1.0.0",
   "description": "",
   "type": "module",
-  "main": "dist/server.js",
+  "main": "server.js",
   "scripts": {
     "build-ts": "tsc",
     "postinstall": "npm run build-ts",
     "start": "npm run serve",
-    "serve": "node dist/server.js",
-    "watch-node": "nodemon dist/server.js",
+    "serve": "node server.js",
+    "watch-node": "nodemon server.js",
     "watch-ts": "tsc -w"
   },
   "engines": {
