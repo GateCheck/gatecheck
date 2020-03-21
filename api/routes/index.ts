@@ -8,5 +8,6 @@ import requestRoute from './request';
 import requestsRoute from './requests';
 import userRoute from './user';
 import settingsRoute from './settings';
+import schoolsRoute from './schools';
 
-export { studentRoute, studentsRoute, parentRoute, parentsRoute, instructorRoute, instructorsRoute, requestRoute, requestsRoute, userRoute, settingsRoute };
+export { studentRoute, studentsRoute, parentRoute, parentsRoute, instructorRoute, instructorsRoute, requestRoute, requestsRoute, userRoute, settingsRoute, schoolsRoute };

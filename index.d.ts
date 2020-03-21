@@ -56,6 +56,10 @@ export interface Request extends Document {
 	backAtSchoolTime: number;
 }
 
+export interface School extends Document {
+	name: string
+}
+
 export interface AuthenticatedRequest<T extends IUser> extends ExpressRequest {
 	userData: {
 		email: T['_id'];

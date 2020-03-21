@@ -4,7 +4,7 @@ import cookieParser from 'cookie-parser';
 import express from 'express';
 import cors from 'cors';
 
-import { studentRoute, studentsRoute, parentRoute, parentsRoute, instructorRoute, instructorsRoute, userRoute, settingsRoute, requestRoute, requestsRoute } from './api/routes';
+import { studentRoute, studentsRoute, parentRoute, parentsRoute, instructorRoute, instructorsRoute, userRoute, settingsRoute, requestRoute, requestsRoute, schoolsRoute } from './api/routes';
 
 const app = express();
 
@@ -24,5 +24,6 @@ app.use('/api/user', userRoute);
 app.use('/api/user/settings', settingsRoute);
 app.use('/api/request', requestRoute);
 app.use('/api/requests', requestsRoute);
+app.use('/api/schools', schoolsRoute)
 
 export default app;
