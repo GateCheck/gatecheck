@@ -89,11 +89,14 @@ export const add_students = async (req: AuthenticatedRequest<IUser>, res: Respon
 			message: 'You must pass student IDs and they must be valid!'
 		});
 	}
+
+	if (instructor.students == null) instructor.students = [];
 	for (const studentId of studentToAddIds) {
 		const student = await Student.findById(studentId);
 		if (student != null) {
-			instructor.students.push(student);
-			student.instructors.push(instructor);
+			if (!instructor.students.includes(student)) instructor.students.push(student);
+			if (student.instructors == null) instructor.students = [];
+			if (!student.instructors.includes(instructor)) student.instructors.push(instructor);
 			await student.save();
 		}
 	}

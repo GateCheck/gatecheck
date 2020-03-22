@@ -53,7 +53,7 @@ export const add_children = async (req: AuthenticatedRequest<IUser>, res: Respon
 			message: 'Invalid parent ID'
 		});
 	}
-
+	console.log(req.query.child);
 	const childrenToAddIds = [ ...req.query.child ];
 	if (childrenToAddIds.length < 1) {
 		return res.status(200).json({
@@ -61,12 +61,13 @@ export const add_children = async (req: AuthenticatedRequest<IUser>, res: Respon
 			message: 'You must pass student IDs and they must be valid!'
 		});
 	}
-
+	if (parent.children == null) parent.children = [];
 	for (const childId of childrenToAddIds) {
 		const child = await Student.findById(childId);
 		if (child != null) {
-			parent.children.push(child);
-			child.parents.push(parent);
+			if (!parent.children.includes(child)) parent.children.push(child);
+			if (child.parents == null) child.parents = [];
+			if (!child.parents.includes(parent)) child.parents.push(parent);
 			await child.save();
 		}
 	}
@@ -106,11 +107,14 @@ export const add_partners = async (req: AuthenticatedRequest<IUser>, res: Respon
 		});
 	}
 
+	if (parent.partners == null) parent.partners = [];
+
 	for (const partnerId of partnerToAddIds) {
 		const partner = await Parent.findById(partnerId);
 		if (partner != null) {
-			parent.partners.push(partner);
-			partner.partners.push(parent);
+			if (!parent.partners.includes(partner)) parent.partners.push(partner);
+			if (partner.partners == null) partner.partners = [];
+			if (!partner.partners.includes(parent)) partner.partners.push(parent);
 			await partner.save();
 		}
 	}
