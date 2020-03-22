@@ -88,7 +88,7 @@ export const signup = async (req: Request, res: Response) => {
 				},
 				process.env.JWT_KEY!,
 				{
-					expiresIn: '5h'
+					expiresIn: '12h'
 				}
 			);
 			const data = userDoc.toJSON();

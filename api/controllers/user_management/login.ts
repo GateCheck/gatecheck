@@ -23,7 +23,7 @@ const authenticateAndGetToken = (user: IUser, password: string): Promise<string 
 							},
 							process.env.JWT_KEY!,
 							{
-								expiresIn: '5h'
+								expiresIn: '12h'
 							}
 						)
 					)
