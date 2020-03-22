@@ -96,7 +96,7 @@ export const enum AdministrativeLevel {
 	Three = 3
 }
 
-declare enum UserKind {
+export const enum UserKind {
 	Instructor = 'Instructor',
 	Parent = 'Parent',
 	Student = 'Student'
