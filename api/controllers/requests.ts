@@ -5,13 +5,15 @@ import {
 	IStudent,
 	AdministrativeLevel,
 	UserKind,
-	RequestStatus
+	RequestStatus,
+	IRequest,
+	IReply
 } from '../..';
 import { Response } from 'express';
 
 import moment from 'moment';
 import { Types } from 'mongoose';
-import { Request } from '../../database/models';
+import { Request, Reply } from '../../database/models';
 
 export const get_request = async (req: AuthenticatedRequest<IInstructor & IParent & IStudent>, res: Response) => {
 	Request.findById(req.params.requestId)
@@ -224,4 +226,80 @@ export const get_all_requests = async (req: AuthenticatedRequest<IInstructor & I
 		});
 };
 
-export default { get_all_requests, get_request, delete_request, create_request, edit_request, update_request_status };
+export const add_reply = async (req: AuthenticatedRequest<IInstructor & IParent & IStudent>, res: Response) => {
+	const { requestId, content } = req.body;
+	if (content == null) {
+		return res.status(400).json({
+			success: false,
+			message: 'No reply content. Please pass "content" in the body of the request.'
+		});
+	} else if (requestId == null) {
+		return res.status(400).json({
+			success: false,
+			message: 'No request id. Please pass "requestId" in the body of the request.'
+		});
+	}
+	let allowAccess = req.user.administrative_level > AdministrativeLevel.One;
+	if (!allowAccess) {
+		const request = await Request.findById(requestId);
+		allowAccess =
+			request != null &&
+			(req.user._id == request.issuer._id ||
+				((req.user.kind == UserKind.Instructor &&
+					(await req.user.isInstructorOfStudentWithIdOf(request.issuer._id))) ||
+					(req.user.kind == UserKind.Parent && (await req.user.hasChildWithIdOf(request.issuer._id)))));
+		if (allowAccess) {
+			const reply = new Reply({
+				content,
+				postedBy: req.user._id,
+				postedDate: new Date(),
+				parentRequest: request!._id
+			});
+			reply.save();
+			request!.replies.push(reply);
+			res.status(200).json({
+				success: true,
+				reply
+			});
+		} else {
+			res.status(401).json({
+				success: false,
+				message: 'Unauthorized'
+			});
+		}
+	}
+};
+
+export const delete_reply = async (req: AuthenticatedRequest<IInstructor & IParent & IStudent>, res: Response) => {
+	const { replyId } = req.body;
+	if (replyId == null) {
+		return res.status(400).json({
+			success: false,
+			message: 'No reply id. Please pass "replyId" in the body of the request.'
+		});
+	}
+	let allowAccess = req.user.administrative_level > AdministrativeLevel.One;
+	if (!allowAccess) {
+		const reply = await Reply.findById(replyId);
+		allowAccess = reply != null && req.user._id == reply.postedBy;
+		if (allowAccess) {
+			let request = await Request.findById(reply!.postedBy);
+			const newReplies = request!.replies.filter((reply) => reply._id != replyId);
+			request!.replies = newReplies;
+			request = await request!.save();
+			reply!.remove();
+			res.status(200).json({
+				success: true,
+				message: 'Deleted resource',
+				newRequest: request
+			});
+		} else {
+			res.status(401).json({
+				success: false,
+				message: 'Unauthorized'
+			});
+		}
+	}
+};
+
+export default { get_all_requests, get_request, delete_request, create_request, edit_request, update_request_status, add_reply, delete_reply };

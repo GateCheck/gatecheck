@@ -9,7 +9,11 @@ router.get('/:requestId', getAuthenticatedUser as any, RequestsController.get_re
 
 router.post('/', getAuthenticatedUser as any, RequestsController.create_request as any);
 
+router.post('/', getAuthenticatedUser as any, RequestsController.add_reply as any);
+
 router.delete('/:requestId', getAuthenticatedUser as any, RequestsController.delete_request as any);
+
+router.delete('/', getAuthenticatedUser as any, RequestsController.delete_reply as any);
 
 router.patch('/:requestId', getAuthenticatedUser as any, RequestsController.edit_request as any);
 

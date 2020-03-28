@@ -1,5 +1,6 @@
 import { Document } from 'mongoose';
 import { Request as ExpressRequest } from 'express';
+import { Moment } from 'moment';
 
 export interface IUser extends Document {
 	contact: Contact;
@@ -43,7 +44,7 @@ export interface IInstructor extends IUser {
 	findCoworkersByInstructor(): Promise<Array<IInstructor>>;
 }
 
-export interface Request extends Document {
+export interface IRequest extends Document {
 	status: RequestStatus;
 	acceptedDate: number;
 	details: string;
@@ -54,10 +55,18 @@ export interface Request extends Document {
 	validTill: number;
 	goLocation: string;
 	backAtSchoolTime: number;
+	replies: Array<IReply>;
+}
+
+export interface IReply extends Document {
+	content: string;
+	postedDate: Moment;
+	postedBy: IUser['_id'];
+	parentRequest: IRequest['_id'];
 }
 
 export interface School extends Document {
-	name: string
+	name: string;
 }
 
 export interface AuthenticatedRequest<T extends IUser> extends ExpressRequest {

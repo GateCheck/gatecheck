@@ -1,5 +1,5 @@
 import { Schema, model } from 'mongoose';
-import { Request } from '../..';
+import { IRequest, IReply } from '../..';
 
 const requestSchema = new Schema({
 	_id: Schema.Types.ObjectId,
@@ -20,7 +20,11 @@ const requestSchema = new Schema({
 	title: String,
 	validTill: Date,
 	goLocation: String,
-	backAtSchoolTime: Date
+	backAtSchoolTime: Date,
+	replies: [{
+		type: Schema.Types.ObjectId,
+		ref: 'Reply'
+	}]
 });
 
-export default model<Request>('Request', requestSchema, 'requests');
+export default model<IRequest>('Request', requestSchema, 'requests');
