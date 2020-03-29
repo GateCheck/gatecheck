@@ -96,7 +96,8 @@ export interface RegisterUserPayload<T extends IStudent> {
 export const enum RequestStatus {
 	Created = 'Created',
 	Accepted = 'Accepted',
-	Denied = 'Denied'
+	Denied = 'Denied',
+	Expired = 'Expired'
 }
 
 export const enum AdministrativeLevel {

@@ -97,7 +97,9 @@ export const update_request_status = async (req: AuthenticatedRequest<IInstructo
 	if (
 		req.body.status == null ||
 		req.body.status.toLowerCase() !== RequestStatus.Accepted.toLowerCase() ||
-		req.body.status.toLowerCase() !== RequestStatus.Denied.toLowerCase()
+		req.body.status.toLowerCase() !== RequestStatus.Denied.toLowerCase() ||
+		req.body.status.toLowerCase() !== RequestStatus.Created.toLowerCase() ||
+		req.body.status.toLowerCase() !== RequestStatus.Expired.toLowerCase()
 	) {
 		return res.status(400).json({
 			success: false,
@@ -121,18 +123,24 @@ export const update_request_status = async (req: AuthenticatedRequest<IInstructo
 			success: false,
 			message: 'Unauthorized'
 		});
-	} else if (request.status === RequestStatus.Accepted) {
+	} else if (request.status === RequestStatus.Accepted || request.status === RequestStatus.Expired) {
 		return res.status(400).json({
 			success: false,
-			message: 'This request is in an immutable state as it has been accepted.'
+			message: `This request is in an immutable state as it has ${request.status === RequestStatus.Expired
+				? 'expired'
+				: 'been accepted'}.`
 		});
 	}
 
 	request.status =
 		req.body.status.toLowerCase() === RequestStatus.Accepted.toLowerCase()
 			? RequestStatus.Accepted
-			: RequestStatus.Denied;
-	request.acceptedDate = moment().unix();
+			: req.body.status.toLowerCase() === RequestStatus.Created.toLowerCase()
+				? RequestStatus.Created
+				: req.body.status.toLowerCase() === RequestStatus.Denied.toLowerCase()
+					? RequestStatus.Denied
+					: RequestStatus.Expired;
+	if (request.status === RequestStatus.Accepted) request.acceptedDate = moment().unix();
 
 	request.save().then((doc) => {
 		res.status(200).json({
@@ -302,4 +310,13 @@ export const delete_reply = async (req: AuthenticatedRequest<IInstructor & IPare
 	}
 };
 
-export default { get_all_requests, get_request, delete_request, create_request, edit_request, update_request_status, add_reply, delete_reply };
+export default {
+	get_all_requests,
+	get_request,
+	delete_request,
+	create_request,
+	edit_request,
+	update_request_status,
+	add_reply,
+	delete_reply
+};
