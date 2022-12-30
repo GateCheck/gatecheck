@@ -52,7 +52,7 @@
     "@types/validator": "^12.0.1",
     "chai": "^4.2.0",
     "i": "^0.3.6",
-    "mocha": "^7.1.1",
+    "mocha": "^10.2.0",
     "mockgoose": "^8.0.4",
     "morgan": "^1.9.1",
     "nodemon": "^2.0.2",
